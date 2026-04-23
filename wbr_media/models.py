@@ -5,7 +5,6 @@ from django.db import models
 from django.utils import timezone
 from PIL import Image
 
-
 def media_upload_path(instance, filename):
     config = getattr(settings, "WBR_MEDIA", {})
     base = config.get("UPLOAD_TO", "media/content/%Y/%m/")
