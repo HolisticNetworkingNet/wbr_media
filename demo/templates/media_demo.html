@@ -1,0 +1,50 @@
+{% load wbr_media_tags %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Media Demo</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 1rem;
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-size: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Media Demo</h1>
+
+<div class="grid">
+    {% for asset in assets %}
+        <div class="card">
+            <h3>{{ asset.title|default:asset.file_name }}</h3>
+
+            {% render_media asset %}
+
+            <p><small>{{ asset.media_type }}</small></p>
+        </div>
+    {% empty %}
+        <p>No media found.</p>
+    {% endfor %}
+</div>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+<figure class="wbr-media wbr-media--image">
+    <img
+        src="{{ asset.file.url }}"
+        alt="{{ asset.alt_text|default:asset.title }}"
+        class="wbr-media__image"
+    >
+    {% if asset.description %}
+        <figcaption class="wbr-media__caption">{{ asset.description }}</figcaption>
+    {% endif %}
+</figure>
