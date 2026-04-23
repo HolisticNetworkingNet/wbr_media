@@ -1,0 +1,9 @@
+[project]
+name = "wbr-media"
+version = "0.1.0"
+description = "Reusable media library for WBR projects"
+authors = [{ name = "Thomas Belknap" }]
+requires-python = ">=3.12"
+
+[tool.setuptools.packages.find]
+where = ["."]
