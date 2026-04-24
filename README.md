@@ -36,6 +36,17 @@ structured way to manage and render media across content types.
 
 without introducing a full CMS.
 
+## Why not just use Django FileField directly?
+
+You can—but you'll end up reimplementing:
+
+- metadata extraction
+- file cleanup on replacement
+- consistent rendering patterns
+- image-specific handling
+
+`wbr_media` provides these in a small, reusable layer.
+
 ## ✨ Features
 
 - Structured `MediaAsset` model
