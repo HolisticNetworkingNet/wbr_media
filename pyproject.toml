@@ -1,13 +1,30 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "wbr-media"
-version = "0.1.0"
-description = "Small reusable media app for Django projects"
-authors = [{ name = "Thomas Belknap" }]
+version = "0.1.1"
+description = "A small reusable media app for Django projects"
+readme = "README.md"
 requires-python = ">=3.12"
+license = "MIT"
+authors = [{ name = "Thomas Belknap" }]
 dependencies = [
     "Django>=4.2",
     "Pillow",
 ]
+classifiers = [
+    "Framework :: Django",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/holisticnetworkingnet/wbr_media"
+Repository = "https://github.com/holisticnetworkingnet/wbr_media"
+Issues = "https://github.com/holisticnetworkingnet/wbr_media/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -18,5 +35,5 @@ exclude = ["demo*", "tests*"]
 wbr_media = ["templates/**/*.html", "static/**/*"]
 
 [tool.pytest.ini_options]
-DJANGO_SETTINGS_MODULE = "demo.demo.settings"
+DJANGO_SETTINGS_MODULE = "demo.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
