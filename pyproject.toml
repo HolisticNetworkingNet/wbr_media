@@ -1,12 +1,21 @@
 [project]
 name = "wbr-media"
 version = "0.1.0"
-description = "Reusable media library for WBR projects"
+description = "Small reusable media app for Django projects"
 authors = [{ name = "Thomas Belknap" }]
 requires-python = ">=3.12"
+dependencies = [
+    "Django>=4.2",
+    "Pillow",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
+include = ["wbr_media*"]
+exclude = ["demo*", "tests*"]
+
+[tool.setuptools.package-data]
+wbr_media = ["templates/**/*.html", "static/**/*"]
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "demo.demo.settings"
