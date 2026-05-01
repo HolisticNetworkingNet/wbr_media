@@ -6,7 +6,7 @@ register = template.Library()
 
 
 @register.simple_tag
-def render_media(asset, size="full", display=None, class_name=""):
+def render_media(asset, size="full", display=None, class_name="", alt=""):
     """
     Render a MediaAsset using app-defined templates.
 
@@ -42,6 +42,7 @@ def render_media(asset, size="full", display=None, class_name=""):
         "display": display,
         "class_name": class_name,
         "media_url": media_url,
+        "alt": alt,
     }
 
     return mark_safe(template_obj.render(context))
