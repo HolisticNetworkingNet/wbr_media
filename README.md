@@ -85,10 +85,12 @@ INSTALLED_APPS = [
 ]
 ```
 
-Configure your media save location:
+Configure your media save location. 
+
+__IMPORTANT__: This directory will be appended to the `MEDIA_ROOT` setting.
 ```python
 WBR_MEDIA = [
-    "UPLOAD_TO": "path/to/media/%Y/%m/",
+    "UPLOAD_TO": "wbr_media/%Y/%m/",
 ]
 ```
 

@@ -122,5 +122,5 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 # WBR Media settings
 WBR_MEDIA = {
-    "UPLOAD_TO": "assets/originals/%Y/%m/",
+    "UPLOAD_TO": "wbr_media/%Y/%m/",
 }
