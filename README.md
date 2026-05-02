@@ -1,3 +1,5 @@
+from demo.demo.settings import WBR_MEDIA
+
 # wbr_media
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -80,6 +82,13 @@ Add to your Django settings:
 INSTALLED_APPS = [
     ...
     "wbr_media",
+]
+```
+
+Configure your media save location:
+```python
+WBR_MEDIA = [
+    "UPLOAD_TO": "path/to/media/%Y/%m/",
 ]
 ```
 
