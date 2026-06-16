@@ -172,7 +172,7 @@ python manage.py runserver
 ## Testing
 
 ```bash
-pytest wbr_media/tests.py
+pytest wbr_media/tests.py --ds=demo.demo.settings
 ```
 
 Visit:
