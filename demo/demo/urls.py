@@ -2,8 +2,8 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
-from demo.demo import settings
-from demo.demo.views import media_demo
+from demo import settings
+from demo.views import media_demo
 
 urlpatterns = [
     path('admin/', admin.site.urls),
