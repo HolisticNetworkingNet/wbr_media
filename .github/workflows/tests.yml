@@ -26,4 +26,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest wbr_media/tests.py --ds=demo.settings
+          pytest wbr_media/tests.py --ds=demo.demo.settings
