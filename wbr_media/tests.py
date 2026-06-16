@@ -9,11 +9,12 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
 from django.template import Context, Template
+from types import SimpleNamespace
 
 from wbr_media.admin import MediaAssetAdmin
 from wbr_media.models import ImageMetadata, MediaAsset
 from wbr_media.models import classify_media_type, media_upload_path
-
+from wbr_media.exporting import MediaImportError, WBRMediaHandler
 
 def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     buffer = io.BytesIO()
@@ -303,3 +304,181 @@ class DemoViewTests(MediaAssetBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Demo image")
         self.assertContains(response, "image")
+
+class MediaExportImportTests(MediaAssetBaseTestCase):
+    def get_context(self):
+        return SimpleNamespace(actions=[])
+
+    def get_handler(self):
+        return WBRMediaHandler()
+
+    def test_export_empty_media_library(self):
+        handler = self.get_handler()
+        context = self.get_context()
+
+        payload = handler.export_data(site=None, context=context)
+
+        self.assertEqual(payload, {"assets": []})
+
+    def test_export_import_asset_without_image_metadata(self):
+        MediaAsset.objects.bulk_create(
+            [
+                MediaAsset(
+                    file="assets/originals/2026/04/menu.pdf",
+                    title="Menu PDF",
+                    alt_text="",
+                    description="Printable menu",
+                    file_name="menu.pdf",
+                    file_size=45678,
+                    mime_type="application/pdf",
+                    media_type="document",
+                )
+            ]
+        )
+
+        handler = self.get_handler()
+        context = self.get_context()
+
+        payload = handler.export_data(site=None, context=context)
+
+        MediaAsset.objects.all().delete()
+
+        handler.validate(payload, context)
+        handler.import_data(payload, context)
+
+        imported = MediaAsset.objects.get(file="assets/originals/2026/04/menu.pdf")
+
+        self.assertEqual(imported.title, "Menu PDF")
+        self.assertEqual(imported.description, "Printable menu")
+        self.assertEqual(imported.file_name, "menu.pdf")
+        self.assertEqual(imported.file_size, 45678)
+        self.assertEqual(imported.mime_type, "application/pdf")
+        self.assertEqual(imported.media_type, "document")
+        self.assertFalse(hasattr(imported, "image_metadata"))
+
+    def test_export_import_multiple_assets(self):
+        MediaAsset.objects.bulk_create(
+            [
+                MediaAsset(
+                    file="assets/originals/2026/04/photo.jpg",
+                    title="Photo",
+                    file_name="photo.jpg",
+                    file_size=100,
+                    mime_type="image/jpeg",
+                    media_type="image",
+                ),
+                MediaAsset(
+                    file="assets/originals/2026/04/song.mp3",
+                    title="Song",
+                    file_name="song.mp3",
+                    file_size=200,
+                    mime_type="audio/mpeg",
+                    media_type="audio",
+                ),
+                MediaAsset(
+                    file="assets/originals/2026/04/menu.pdf",
+                    title="Menu",
+                    file_name="menu.pdf",
+                    file_size=300,
+                    mime_type="application/pdf",
+                    media_type="document",
+                ),
+            ]
+        )
+
+        handler = self.get_handler()
+        context = self.get_context()
+
+        payload = handler.export_data(site=None, context=context)
+
+        self.assertEqual(len(payload["assets"]), 3)
+
+        MediaAsset.objects.all().delete()
+
+        handler.validate(payload, context)
+        handler.import_data(payload, context)
+
+        self.assertEqual(MediaAsset.objects.count(), 3)
+        self.assertTrue(
+            MediaAsset.objects.filter(
+                file="assets/originals/2026/04/photo.jpg",
+                media_type="image",
+            ).exists()
+        )
+        self.assertTrue(
+            MediaAsset.objects.filter(
+                file="assets/originals/2026/04/song.mp3",
+                media_type="audio",
+            ).exists()
+        )
+        self.assertTrue(
+            MediaAsset.objects.filter(
+                file="assets/originals/2026/04/menu.pdf",
+                media_type="document",
+            ).exists()
+        )
+
+    def test_validate_rejects_non_object_payload(self):
+        handler = self.get_handler()
+        context = self.get_context()
+
+        with self.assertRaises(MediaImportError):
+            handler.validate([], context)
+
+    def test_validate_rejects_non_list_assets(self):
+        handler = self.get_handler()
+        context = self.get_context()
+
+        with self.assertRaises(MediaImportError):
+            handler.validate({"assets": "not-a-list"}, context)
+
+    def test_validate_rejects_asset_without_file(self):
+        handler = self.get_handler()
+        context = self.get_context()
+
+        with self.assertRaises(MediaImportError):
+            handler.validate({"assets": [{"title": "Missing file"}]}, context)
+
+    def test_import_removes_existing_image_metadata_when_payload_has_none(self):
+        asset = MediaAsset(
+            file="assets/originals/2026/04/photo.jpg",
+            title="Photo",
+            file_name="photo.jpg",
+            file_size=100,
+            mime_type="image/jpeg",
+            media_type="image",
+        )
+        MediaAsset.objects.bulk_create([asset])
+
+        asset = MediaAsset.objects.get(file="assets/originals/2026/04/photo.jpg")
+
+        ImageMetadata.objects.create(
+            media=asset,
+            width=1200,
+            height=800,
+            format="JPEG",
+            color_mode="RGB",
+            has_alpha=False,
+        )
+
+        handler = self.get_handler()
+        context = self.get_context()
+
+        payload = {
+            "assets": [
+                {
+                    "file": "assets/originals/2026/04/photo.jpg",
+                    "title": "Photo",
+                    "file_name": "photo.jpg",
+                    "file_size": 100,
+                    "mime_type": "image/jpeg",
+                    "media_type": "image",
+                }
+            ]
+        }
+
+        handler.validate(payload, context)
+        handler.import_data(payload, context)
+
+        asset.refresh_from_db()
+        self.assertFalse(hasattr(asset, "image_metadata"))
