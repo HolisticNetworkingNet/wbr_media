@@ -7,8 +7,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DJANGO_SETTINGS_MODULE: demo.settings
-      PYTHONPATH: ${{ github.workspace }}/demo:${{ github.workspace }}
+      DJANGO_SETTINGS_MODULE: demo.demo.settings
+      PYTHONPATH: ${{ github.workspace }}
 
     steps:
       - uses: actions/checkout@v4
@@ -26,4 +26,4 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest wbr_media/tests.py --ds=demo.demo.settings
+          pytest wbr_media/tests.py
