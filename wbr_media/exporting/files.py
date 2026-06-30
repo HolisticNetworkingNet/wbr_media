@@ -24,6 +24,7 @@ class MediaFileExporter:
         self.prepare_output_directory()
         self.assets = self.discover_assets()
         self.write_manifest()
+        self.export_assets()
         return self.build_result()
 
     def prepare_output_directory(self):
@@ -51,3 +52,19 @@ class MediaFileExporter:
             json.dumps(manifest, indent=2),
             encoding="utf-8",
         )
+
+    def export_assets(self):
+        for asset in self.assets:
+            self.export_asset(asset)
+
+    def export_asset(self, asset):
+        if not asset.file.storage.exists(asset.file.name):
+            return
+
+        relative_path = Path(asset.file.name)
+        destination = self.files_dir / relative_path
+
+        destination.parent.mkdir(parents=True, exist_ok=True)
+
+        with asset.file.open("rb") as source:
+            destination.write_bytes(source.read())

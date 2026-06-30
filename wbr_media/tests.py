@@ -539,3 +539,42 @@ def test_media_file_exporter_manifest_includes_assets(tmp_path, settings):
             "exists": True,
         }
     ]
+
+@pytest.mark.django_db
+def test_media_file_exporter_copies_asset_file(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path / "media-root"
+
+    asset = MediaAsset.objects.create(
+        file=ContentFile(b"fake image data", name="uploads/test.jpg"),
+        title="Test image",
+    )
+
+    output_dir = tmp_path / "media-export"
+
+    MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    exported_file = output_dir / "files" / asset.file.name
+
+    assert exported_file.exists()
+    assert exported_file.read_bytes() == b"fake image data"
+
+@pytest.mark.django_db
+def test_media_file_exporter_skips_missing_asset_file(tmp_path):
+    MediaAsset.objects.bulk_create(
+        [
+            MediaAsset(
+                file="uploads/missing.jpg",
+                title="Missing image",
+            )
+        ]
+    )
+
+    asset = MediaAsset.objects.get(file="uploads/missing.jpg")
+
+    output_dir = tmp_path / "media-export"
+
+    MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    exported_file = output_dir / "files" / asset.file.name
+
+    assert not exported_file.exists()
