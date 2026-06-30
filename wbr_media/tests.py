@@ -2,6 +2,8 @@ import io
 import shutil
 import tempfile
 from pathlib import Path
+import json
+import pytest
 
 from django.contrib.admin.sites import AdminSite
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -10,11 +12,13 @@ from django.urls import reverse
 from PIL import Image
 from django.template import Context, Template
 from types import SimpleNamespace
+from django.core.files.base import ContentFile
 
 from wbr_media.admin import MediaAssetAdmin
 from wbr_media.models import ImageMetadata, MediaAsset
 from wbr_media.models import classify_media_type, media_upload_path
 from wbr_media.exporting import MediaImportError, WBRMediaHandler
+from wbr_media.exporting.files import MediaFileExporter, MediaExportResult
 
 def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     buffer = io.BytesIO()
@@ -482,3 +486,95 @@ class MediaExportImportTests(MediaAssetBaseTestCase):
 
         asset.refresh_from_db()
         self.assertFalse(hasattr(asset, "image_metadata"))
+
+
+@pytest.mark.django_db
+def test_media_file_exporter_creates_output_dir(tmp_path):
+    output_dir = tmp_path / "media-export"
+
+    result = MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    assert output_dir.exists()
+    assert output_dir.is_dir()
+    assert isinstance(result, MediaExportResult)
+    assert result.output_directory == output_dir
+
+
+@pytest.mark.django_db
+def test_media_file_exporter_writes_manifest(tmp_path):
+    output_dir = tmp_path / "media-export"
+
+    result = MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    manifest_path = output_dir / "media_manifest.json"
+
+    assert manifest_path.exists()
+    assert result.manifest_path == manifest_path
+
+    manifest = json.loads(manifest_path.read_text())
+
+    assert manifest["version"] == 1
+    assert manifest["assets"] == []
+
+
+@pytest.mark.django_db
+def test_media_file_exporter_manifest_includes_assets(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path / "media-root"
+
+    asset = MediaAsset.objects.create(
+        file=ContentFile(b"fake image data", name="uploads/test.jpg"),
+        title="Test image",
+    )
+
+    output_dir = tmp_path / "media-export"
+
+    MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    manifest = json.loads((output_dir / "media_manifest.json").read_text())
+
+    assert manifest["assets"] == [
+        {
+            "file": asset.file.name,
+            "export_path": f"files/{asset.file.name}",
+            "exists": True,
+        }
+    ]
+
+@pytest.mark.django_db
+def test_media_file_exporter_copies_asset_file(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path / "media-root"
+
+    asset = MediaAsset.objects.create(
+        file=ContentFile(b"fake image data", name="uploads/test.jpg"),
+        title="Test image",
+    )
+
+    output_dir = tmp_path / "media-export"
+
+    MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    exported_file = output_dir / "files" / asset.file.name
+
+    assert exported_file.exists()
+    assert exported_file.read_bytes() == b"fake image data"
+
+@pytest.mark.django_db
+def test_media_file_exporter_skips_missing_asset_file(tmp_path):
+    MediaAsset.objects.bulk_create(
+        [
+            MediaAsset(
+                file="uploads/missing.jpg",
+                title="Missing image",
+            )
+        ]
+    )
+
+    asset = MediaAsset.objects.get(file="uploads/missing.jpg")
+
+    output_dir = tmp_path / "media-export"
+
+    MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    exported_file = output_dir / "files" / asset.file.name
+
+    assert not exported_file.exists()
