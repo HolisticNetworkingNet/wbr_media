@@ -15,6 +15,7 @@ from wbr_media.admin import MediaAssetAdmin
 from wbr_media.models import ImageMetadata, MediaAsset
 from wbr_media.models import classify_media_type, media_upload_path
 from wbr_media.exporting import MediaImportError, WBRMediaHandler
+from wbr_media.exporting.files import MediaFileExporter, MediaExportResult
 
 def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     buffer = io.BytesIO()
@@ -482,3 +483,24 @@ class MediaExportImportTests(MediaAssetBaseTestCase):
 
         asset.refresh_from_db()
         self.assertFalse(hasattr(asset, "image_metadata"))
+
+
+def test_media_file_exporter_creates_output_dir(tmp_path):
+    output_dir = tmp_path / "media-export"
+
+    result = MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    assert output_dir.exists()
+    assert output_dir.is_dir()
+    assert isinstance(result, MediaExportResult)
+    assert result.output_directory == output_dir
+
+def test_media_file_exporter_creates_output_dirs(tmp_path):
+    output_dir = tmp_path / "media-export"
+
+    result = MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    assert output_dir.is_dir()
+    assert (output_dir / "files").is_dir()
+    assert result.output_directory == output_dir
+    assert result.files_directory == output_dir / "files"
