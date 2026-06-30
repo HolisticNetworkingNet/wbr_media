@@ -2,6 +2,8 @@ import io
 import shutil
 import tempfile
 from pathlib import Path
+import json
+import pytest
 
 from django.contrib.admin.sites import AdminSite
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -10,6 +12,7 @@ from django.urls import reverse
 from PIL import Image
 from django.template import Context, Template
 from types import SimpleNamespace
+from django.core.files.base import ContentFile
 
 from wbr_media.admin import MediaAssetAdmin
 from wbr_media.models import ImageMetadata, MediaAsset
@@ -485,6 +488,7 @@ class MediaExportImportTests(MediaAssetBaseTestCase):
         self.assertFalse(hasattr(asset, "image_metadata"))
 
 
+@pytest.mark.django_db
 def test_media_file_exporter_creates_output_dir(tmp_path):
     output_dir = tmp_path / "media-export"
 
@@ -495,12 +499,43 @@ def test_media_file_exporter_creates_output_dir(tmp_path):
     assert isinstance(result, MediaExportResult)
     assert result.output_directory == output_dir
 
-def test_media_file_exporter_creates_output_dirs(tmp_path):
+
+@pytest.mark.django_db
+def test_media_file_exporter_writes_manifest(tmp_path):
     output_dir = tmp_path / "media-export"
 
     result = MediaFileExporter(site=None, output_dir=output_dir).run()
 
-    assert output_dir.is_dir()
-    assert (output_dir / "files").is_dir()
-    assert result.output_directory == output_dir
-    assert result.files_directory == output_dir / "files"
+    manifest_path = output_dir / "media_manifest.json"
+
+    assert manifest_path.exists()
+    assert result.manifest_path == manifest_path
+
+    manifest = json.loads(manifest_path.read_text())
+
+    assert manifest["version"] == 1
+    assert manifest["assets"] == []
+
+
+@pytest.mark.django_db
+def test_media_file_exporter_manifest_includes_assets(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path / "media-root"
+
+    asset = MediaAsset.objects.create(
+        file=ContentFile(b"fake image data", name="uploads/test.jpg"),
+        title="Test image",
+    )
+
+    output_dir = tmp_path / "media-export"
+
+    MediaFileExporter(site=None, output_dir=output_dir).run()
+
+    manifest = json.loads((output_dir / "media_manifest.json").read_text())
+
+    assert manifest["assets"] == [
+        {
+            "file": asset.file.name,
+            "export_path": f"files/{asset.file.name}",
+            "exists": True,
+        }
+    ]

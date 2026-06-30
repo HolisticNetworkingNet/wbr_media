@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 from pathlib import Path
+import json
+
+from wbr_media.models import MediaAsset
+from .manifest import MEDIA_MANIFEST_FILENAME, build_manifest
 
 
 @dataclass
 class MediaExportResult:
     output_directory: Path
     files_directory: Path
+    manifest_path: Path
+    assets: list[MediaAsset]
 
 
 class MediaFileExporter:
@@ -16,6 +22,8 @@ class MediaFileExporter:
 
     def run(self):
         self.prepare_output_directory()
+        self.assets = self.discover_assets()
+        self.write_manifest()
         return self.build_result()
 
     def prepare_output_directory(self):
@@ -26,4 +34,20 @@ class MediaFileExporter:
         return MediaExportResult(
             output_directory=self.output_dir,
             files_directory=self.files_dir,
+            manifest_path=self.manifest_path,
+            assets=self.assets,
+        )
+
+    def discover_assets(self):
+        return MediaAsset.objects.all().order_by("file")
+
+    def write_manifest(self):
+        self.manifest_path = self.output_dir / MEDIA_MANIFEST_FILENAME
+        manifest = build_manifest(
+            assets=self.assets,
+            files_dir=self.files_dir,
+        )
+        self.manifest_path.write_text(
+            json.dumps(manifest, indent=2),
+            encoding="utf-8",
         )
