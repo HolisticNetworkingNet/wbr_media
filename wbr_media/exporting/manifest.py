@@ -1,0 +1,2 @@
+MEDIA_MANIFEST_VERSION = 1
+MEDIA_MANIFEST_FILENAME = "media_manifest.json"
