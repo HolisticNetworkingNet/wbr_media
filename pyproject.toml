@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wbr-media"
-version = "0.1.2"
-description = "A small reusable media app for Django projects"
+version = "0.2.0"
+description = "Portable media infrastructure for Django."
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
