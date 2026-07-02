@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from pathlib import Path
 import json
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 from wbr_media.models import MediaAsset
 from .manifest import MEDIA_MANIFEST_FILENAME, build_manifest
@@ -33,6 +35,18 @@ class MediaImportPlan:
     manifest: dict
     archive_paths: set[str]
     assets: list[dict]
+    validation_errors: list[str]
+
+    @property
+    def is_valid(self):
+        return not self.validation_errors
+
+
+@dataclass
+class MediaRestoreResult:
+    zip_path: Path
+    restored: list[str]
+    skipped: list[str]
     validation_errors: list[str]
 
     @property
@@ -231,3 +245,42 @@ class MediaFileImporter:
                     f"Checksum mismatch for {path}: "
                     f"expected {expected_checksum}, got {actual_checksum}"
                 )
+
+    def restore(self):
+        plan = self.inspect()
+
+        if not plan.is_valid:
+            return MediaRestoreResult(
+                zip_path=self.zip_path,
+                restored=[],
+                skipped=[],
+                validation_errors=plan.validation_errors,
+            )
+
+        restored = []
+        skipped = []
+
+        with ZipFile(self.zip_path, "r") as archive:
+            for row in plan.assets:
+                if not row.get("exists"):
+                    skipped.append(row["file"])
+                    continue
+
+                source_path = row["export_path"]
+                storage_path = row["file"]
+
+                with archive.open(source_path, "r") as source:
+                    content = ContentFile(source.read())
+
+                if default_storage.exists(storage_path):
+                    default_storage.delete(storage_path)
+
+                default_storage.save(storage_path, content)
+                restored.append(storage_path)
+
+        return MediaRestoreResult(
+            zip_path=self.zip_path,
+            restored=restored,
+            skipped=skipped,
+            validation_errors=[],
+        )
