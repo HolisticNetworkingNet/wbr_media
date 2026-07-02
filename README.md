@@ -1,5 +1,3 @@
-from demo.demo.settings import WBR_MEDIA
-
 # wbr_media
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
@@ -7,76 +5,109 @@ from demo.demo.settings import WBR_MEDIA
 ![Status](https://img.shields.io/badge/status-active-success)
 ![Tests](https://github.com/holisticnetworkingnet/wbr_media/actions/workflows/tests.yml/badge.svg)
 
-A small, reusable media app for Django.
+A small, reusable media application for Django.
 
-`wbr_media` provides a clean way to store, manage, and render media assets without pulling in a full CMS or rebuilding the same patterns in every project.
+`wbr_media` provides a clean, consistent way to store, manage, render, and now **port media assets between Django installations** without requiring a full CMS.
 
 ---
 
-## 📷 Screenshots
+# 📷 Screenshots
 
-### Media Index
+## Media Index
+
 A lightweight media library view with previews and metadata.
+
 ![Media index](docs/images/wbr_media_index.png)
 
-### Media Detail
+## Media Detail
+
 Asset inspection with preview, metadata, and image properties.
+
 ![Media detail](docs/images/wbr_media_admin.png)
 
 ---
 
-## Why WBR Media?
+# Why WBR Media?
 
-Django handles file uploads well, but it doesn’t provide a consistent,
-structured way to manage and render media across content types.
+Django provides excellent support for uploading files, but it intentionally leaves higher-level media management to individual applications.
 
-`wbr_media` is a small layer that standardizes:
+`wbr_media` fills that gap by providing:
 
-- how media is stored
-- how metadata is handled
-- how media is rendered in templates
+- structured media storage
+- automatic metadata extraction
+- consistent template rendering
+- safe file lifecycle management
+- complete import/export portability
 
-without introducing a full CMS.
-
-## Why not just use Django FileField directly?
-
-You can—but you'll end up reimplementing:
-
-- metadata extraction
-- file cleanup on replacement
-- consistent rendering patterns
-- image-specific handling
-
-`wbr_media` provides these in a small, reusable layer.
-
-## ✨ Features
-
-- Structured `MediaAsset` model
-- Automatic file metadata extraction (name, size, MIME type)
-- Image-specific metadata (dimensions, format, etc.)
-- Safe file replacement and deletion (no orphaned files)
-- Simple, flexible template tag for rendering media
+without introducing the complexity of a full content management system.
 
 ---
 
-## 📸 Example
+# Why not just use Django FileField?
+
+You certainly can—but most projects eventually end up rebuilding the same infrastructure:
+
+- metadata extraction
+- image dimension detection
+- MIME type detection
+- cleanup of replaced files
+- cleanup of deleted files
+- rendering helpers
+- import/export tooling
+
+`wbr_media` packages those capabilities into a small, reusable application.
+
+---
+
+# ✨ Features
+
+- Structured `MediaAsset` model
+- Automatic file metadata extraction
+- Image-specific metadata (dimensions, format, alpha, DPI)
+- Safe file replacement and deletion
+- Flexible template rendering
+- Media portability with checksum validation
+- Complete export/import workflow for media libraries
+
+---
+
+# 📸 Rendering Media
+
+Load the template tags:
 
 ```django
 {% load wbr_media_tags %}
+```
 
+Render using the default presentation:
+
+```django
 {% render_media asset %}
+```
+
+Or customize the presentation:
+
+```django
 {% render_media asset display="bare" class_name="card-image" %}
 ```
 
+## Optional Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `size` | Named size (currently returns the original file) |
+| `display` | `figure` (default for images), `bare`, or `link` (default for non-images) |
+| `class_name` | CSS class applied to the rendered element |
+
 ---
 
-## 🚀 Installation
+# 🚀 Installation
 
 ```bash
 pip install -e .
 ```
 
-Add to your Django settings:
+Add the application:
 
 ```python
 INSTALLED_APPS = [
@@ -85,13 +116,14 @@ INSTALLED_APPS = [
 ]
 ```
 
-Configure your media save location. 
+Configure the upload location.
 
-__IMPORTANT__: This directory will be appended to the `MEDIA_ROOT` setting.
+> **Note:** The configured upload path is appended to Django's `MEDIA_ROOT`.
+
 ```python
-WBR_MEDIA = [
+WBR_MEDIA = {
     "UPLOAD_TO": "wbr_media/%Y/%m/",
-]
+}
 ```
 
 Run migrations:
@@ -102,37 +134,9 @@ python manage.py migrate
 
 ---
 
-## 🧠 Basic Usage
+# ⚙️ Configuration
 
-Upload media via Django admin, then render in templates:
-
-```django
-{% load wbr_media_tags %}
-
-{% render_media asset %}
-```
-
-### Optional arguments
-
-```django
-{% render_media asset size="full" %}
-{% render_media asset display="bare" %}
-{% render_media asset class_name="my-class" %}
-```
-
-### Arguments
-
-| Argument     | Description |
-|-------------|------------|
-| `size`      | Named size (default: "full" — currently original file) |
-| `display`   | Controls markup:<br>• `figure` (default for images)<br>• `bare` (just `<img>`)<br>• `link` (default for non-images) |
-| `class_name`| Passed through to the rendered element |
-
----
-
-## ⚙️ Configuration
-
-Optional settings:
+Available settings:
 
 ```python
 WBR_MEDIA = {
@@ -142,65 +146,160 @@ WBR_MEDIA = {
 
 ---
 
-## 📦 What This Is
+# 📦 Media Portability
 
-- A lightweight media layer for Django projects
-- A consistent way to handle files + metadata
-- A simple rendering interface for templates
+One of the primary goals of `wbr_media` is complete portability.
+
+A media library consists of two distinct pieces:
+
+- Media metadata stored in the database
+- Physical media files stored on disk
+
+`wbr_media` exports and restores both as a single portable bundle.
+
+## Exporting a Media Library
+
+Create a complete export:
+
+```bash
+python manage.py export_wbr_media --output ./backups/wbr_media_export.zip
+```
+
+The export process:
+
+1. Exports all `MediaAsset` and `ImageMetadata` records.
+2. Copies physical media assets.
+3. Generates a manifest describing every exported file.
+4. Calculates SHA-256 checksums for each asset.
+5. Validates the completed archive.
+6. Produces a portable bundle.
+
+## Bundle Layout
+
+```
+wbr_media_export.zip
+├── data.json
+└── media_export.zip
+    ├── media_manifest.json
+    └── files/
+```
+
+The media manifest records:
+
+- exported file path
+- existence
+- file size
+- SHA-256 checksum
+
+These checksums are verified before any restore operation proceeds.
 
 ---
 
-## 🚫 What This Is Not
+## Importing a Media Library
 
-- Not a CMS
-- Not a full media library UI
-- Not trying to replicate WordPress
+Restore a previously exported bundle:
 
-This is a focused, infrastructure-level tool.
+```bash
+python manage.py import_wbr_media ./backups/wbr_media_export.zip
+```
+
+The import process:
+
+1. Opens the bundle.
+2. Validates the manifest.
+3. Verifies SHA-256 checksums.
+4. Restores physical media assets.
+5. Restores media database records.
+
+If validation fails, restoration is aborted before modifying the destination installation.
 
 ---
 
-## 🧪 Development
+## Low-Level Commands
 
-A demo project is included:
+The application also exposes lower-level commands for working directly with physical media.
+
+Export physical assets:
+
+```bash
+python manage.py export_media_files --output ./exports/media
+```
+
+Inspect a media archive:
+
+```bash
+python manage.py inspect_media_import ./exports/media_export.zip
+```
+
+Restore physical assets:
+
+```bash
+python manage.py restore_media_files ./exports/media_export.zip
+```
+
+These commands are primarily intended for development, debugging, and testing. In most cases, `export_wbr_media` and `import_wbr_media` should be preferred.
+
+---
+
+# 🧪 Development
+
+A demo project is included.
 
 ```bash
 cd demo
 python manage.py runserver
 ```
 
-## Testing
-
-```bash
-pytest 
-```
-
 Visit:
 
+```
 http://127.0.0.1:8000/media-demo/
+```
+
+## Testing
+
+Run the complete test suite:
+
+```bash
+pytest
+```
 
 ---
 
-## 🛣️ Roadmap
+# 📦 What This Is
 
-Small, practical improvements:
-
-- Size-based image renditions
-- Better integration with project-specific design systems
-- Optional media usage tracking
-
-No large UI or CMS features are planned.
+- A lightweight media layer for Django
+- Consistent media metadata management
+- Flexible template rendering
+- Safe file lifecycle management
+- Portable media transfer between installations
 
 ---
 
-## 📷 Screenshots (optional)
+# 🚫 What This Is Not
 
-Add a screenshot of:
-- Admin media preview
-- Demo grid page
+- A CMS
+- A digital asset management system
+- A replacement for WordPress or Drupal
+- A complete media workflow solution
+
+`wbr_media` is intentionally focused on providing a clean infrastructure layer that can be integrated into larger Django applications.
 
 ---
 
-## 📄 License
+# 🛣️ Roadmap
+
+Future improvements include:
+
+- Generated image renditions
+- Pluggable storage backends
+- Media usage tracking
+- Project-specific rendering extensions
+
+The project intentionally avoids becoming a full CMS.
+
+---
+
+# 📄 License
 
 All Rights Reserved.
