@@ -4,6 +4,7 @@
 ![Django](https://img.shields.io/badge/django-4.2%2B-green)
 ![Status](https://img.shields.io/badge/status-active-success)
 ![Tests](https://github.com/holisticnetworkingnet/wbr_media/actions/workflows/tests.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
 Portable media infrastructure for Django.
 
@@ -300,6 +301,6 @@ The project intentionally avoids becoming a full CMS.
 
 ---
 
-# 📄 License
+## 📄 License
 
-All Rights Reserved.
+MIT License.
