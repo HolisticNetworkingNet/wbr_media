@@ -27,6 +27,19 @@ class MediaExportResult:
     validation_errors: list[str]
 
 
+@dataclass
+class MediaImportPlan:
+    zip_path: Path
+    manifest: dict
+    archive_paths: set[str]
+    assets: list[dict]
+    validation_errors: list[str]
+
+    @property
+    def is_valid(self):
+        return not self.validation_errors
+
+
 class MediaFileExporter:
     def __init__(self, site, output_dir):
         self.site = site
@@ -139,3 +152,82 @@ class MediaFileExporter:
                         f"Checksum mismatch for {path}: "
                         f"expected {expected_checksum}, got {actual_checksum}"
                     )
+
+
+class MediaFileImporter:
+    def __init__(self, zip_path):
+        self.zip_path = Path(zip_path)
+        self.validation_errors = []
+
+    def inspect(self):
+        self.validation_errors = []
+
+        if not self.zip_path.exists():
+            self.validation_errors.append(f"Zip file does not exist: {self.zip_path}")
+
+            return MediaImportPlan(
+                zip_path=self.zip_path,
+                manifest={},
+                archive_paths=set(),
+                assets=[],
+                validation_errors=self.validation_errors,
+            )
+
+        with ZipFile(self.zip_path, "r") as archive:
+            archive_paths = set(archive.namelist())
+
+            if MEDIA_MANIFEST_FILENAME not in archive_paths:
+                self.validation_errors.append(
+                    f"Missing manifest: {MEDIA_MANIFEST_FILENAME}"
+                )
+
+                return MediaImportPlan(
+                    zip_path=self.zip_path,
+                    manifest={},
+                    archive_paths=archive_paths,
+                    assets=[],
+                    validation_errors=self.validation_errors,
+                )
+
+            manifest = json.loads(
+                archive.read(MEDIA_MANIFEST_FILENAME).decode("utf-8")
+            )
+
+            self.validate_archive(archive, manifest, archive_paths)
+
+        return MediaImportPlan(
+            zip_path=self.zip_path,
+            manifest=manifest,
+            archive_paths=archive_paths,
+            assets=manifest.get("assets", []),
+            validation_errors=self.validation_errors,
+        )
+
+    def validate_archive(self, archive, manifest, archive_paths):
+        expected = {
+            row["export_path"]: row
+            for row in manifest.get("assets", [])
+            if row.get("exists")
+        }
+
+        expected_paths = set(expected)
+        expected_paths.add(MEDIA_MANIFEST_FILENAME)
+
+        for path in sorted(expected_paths - archive_paths):
+            self.validation_errors.append(f"Missing from zip: {path}")
+
+        for path in sorted(archive_paths - expected_paths):
+            self.validation_errors.append(f"Unexpected file in zip: {path}")
+
+        for path in sorted(expected_paths & archive_paths):
+            if path == MEDIA_MANIFEST_FILENAME:
+                continue
+
+            expected_checksum = expected[path].get("sha256")
+            actual_checksum = sha256_zip_member(archive, path)
+
+            if actual_checksum != expected_checksum:
+                self.validation_errors.append(
+                    f"Checksum mismatch for {path}: "
+                    f"expected {expected_checksum}, got {actual_checksum}"
+                )

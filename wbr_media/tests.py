@@ -17,8 +17,8 @@ from django.core.files.base import ContentFile
 from wbr_media.admin import MediaAssetAdmin
 from wbr_media.models import ImageMetadata, MediaAsset
 from wbr_media.models import classify_media_type, media_upload_path
-from wbr_media.exporting import MediaImportError, WBRMediaHandler
-from wbr_media.exporting.files import MediaFileExporter, MediaExportResult
+from wbr_media.transfer import MediaImportError, WBRMediaHandler
+from wbr_media.transfer.files import MediaFileExporter, MediaExportResult
 
 def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     buffer = io.BytesIO()

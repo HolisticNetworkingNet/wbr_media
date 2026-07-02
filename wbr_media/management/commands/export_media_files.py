@@ -3,7 +3,7 @@ from shutil import move, rmtree
 
 from django.core.management.base import BaseCommand
 
-from wbr_media.exporting.files import MediaFileExporter
+from wbr_media.transfer.files import MediaFileExporter
 
 
 class Command(BaseCommand):
