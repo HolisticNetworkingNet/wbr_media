@@ -532,13 +532,13 @@ def test_media_file_exporter_manifest_includes_assets(tmp_path, settings):
 
     manifest = json.loads((output_dir / "media_manifest.json").read_text())
 
-    assert manifest["assets"] == [
-        {
-            "file": asset.file.name,
-            "export_path": f"files/{asset.file.name}",
-            "exists": True,
-        }
-    ]
+    manifest_asset = manifest["assets"][0]
+
+    assert manifest_asset["file"] == asset.file.name
+    assert manifest_asset["export_path"] == f"files/{asset.file.name}"
+    assert manifest_asset["exists"] is True
+    assert manifest_asset["size_bytes"] == len(b"fake image data")
+    assert len(manifest_asset["sha256"]) == 64
 
 @pytest.mark.django_db
 def test_media_file_exporter_copies_asset_file(tmp_path, settings):
