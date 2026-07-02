@@ -13,6 +13,9 @@ from PIL import Image
 from django.template import Context, Template
 from types import SimpleNamespace
 from django.core.files.base import ContentFile
+from zipfile import ZipFile
+from django.core.files.storage import default_storage
+from django.core.management import call_command
 
 from wbr_media.admin import MediaAssetAdmin
 from wbr_media.models import ImageMetadata, MediaAsset
@@ -578,3 +581,54 @@ def test_media_file_exporter_skips_missing_asset_file(tmp_path):
     exported_file = output_dir / "files" / asset.file.name
 
     assert not exported_file.exists()
+
+@pytest.mark.django_db
+def test_wbr_media_bundle_round_trip_restores_database_and_files(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path / "media-root"
+
+    asset = MediaAsset.objects.create(
+        file=ContentFile(b"fake image data", name="uploads/test.jpg"),
+        title="Test image",
+        alt_text="Alt text",
+        description="Description",
+    )
+
+    storage_name = asset.file.name
+    bundle_path = tmp_path / "wbr_media_export.zip"
+
+    call_command(
+        "export_wbr_media",
+        output=str(bundle_path),
+    )
+
+    assert bundle_path.exists()
+
+    with ZipFile(bundle_path) as archive:
+        assert set(archive.namelist()) == {
+            "data.json",
+            "media_export.zip",
+        }
+
+    MediaAsset.objects.all().delete()
+    ImageMetadata.objects.all().delete()
+    shutil.rmtree(settings.MEDIA_ROOT)
+
+    assert MediaAsset.objects.count() == 0
+    assert not default_storage.exists(storage_name)
+
+    call_command(
+        "import_wbr_media",
+        str(bundle_path),
+    )
+
+    restored = MediaAsset.objects.get()
+
+    assert restored.file.name == storage_name
+    assert restored.title == "Test image"
+    assert restored.alt_text == "Alt text"
+    assert restored.description == "Description"
+
+    assert default_storage.exists(storage_name)
+
+    with default_storage.open(storage_name, "rb") as restored_file:
+        assert restored_file.read() == b"fake image data"
