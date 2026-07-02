@@ -1,11 +1,11 @@
-# wbr_media
+# WBR Media
 
 ![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 ![Django](https://img.shields.io/badge/django-4.2%2B-green)
 ![Status](https://img.shields.io/badge/status-active-success)
 ![Tests](https://github.com/holisticnetworkingnet/wbr_media/actions/workflows/tests.yml/badge.svg)
 
-A small, reusable media application for Django.
+Portable media infrastructure for Django.
 
 `wbr_media` provides a clean, consistent way to store, manage, render, and now **port media assets between Django installations** without requiring a full CMS.
 
