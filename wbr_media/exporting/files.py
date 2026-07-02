@@ -94,7 +94,7 @@ class MediaFileExporter:
                     target.write(chunk)
 
     def create_zip(self):
-        self.zip_path = self.output_dir / "media_files.zip"
+        self.zip_path = self.output_dir / "media_export.zip"
 
         with ZipFile(self.zip_path, "w", ZIP_DEFLATED) as archive:
             for file_path in self.output_dir.rglob("*"):
