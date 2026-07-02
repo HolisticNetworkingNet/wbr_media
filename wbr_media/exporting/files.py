@@ -4,6 +4,17 @@ import json
 
 from wbr_media.models import MediaAsset
 from .manifest import MEDIA_MANIFEST_FILENAME, build_manifest
+import hashlib
+from zipfile import ZIP_DEFLATED, ZipFile
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+
+    return h.hexdigest()
 
 
 @dataclass
@@ -11,6 +22,7 @@ class MediaExportResult:
     output_directory: Path
     files_directory: Path
     manifest_path: Path
+    zip_path: Path
     assets: list[MediaAsset]
 
 
@@ -23,8 +35,9 @@ class MediaFileExporter:
     def run(self):
         self.prepare_output_directory()
         self.assets = self.discover_assets()
-        self.write_manifest()
         self.export_assets()
+        self.write_manifest()
+        self.create_zip()
         return self.build_result()
 
     def prepare_output_directory(self):
@@ -36,6 +49,7 @@ class MediaFileExporter:
             output_directory=self.output_dir,
             files_directory=self.files_dir,
             manifest_path=self.manifest_path,
+            zip_path=self.zip_path,
             assets=self.assets,
         )
 
@@ -68,3 +82,14 @@ class MediaFileExporter:
 
         with asset.file.open("rb") as source:
             destination.write_bytes(source.read())
+
+    def create_zip(self):
+        self.zip_path = self.output_dir / "media-export.zip"
+
+        with ZipFile(self.zip_path, "w", ZIP_DEFLATED) as archive:
+            for file_path in self.output_dir.rglob("*"):
+                if file_path.is_file() and file_path != self.zip_path:
+                    archive.write(
+                        file_path,
+                        file_path.relative_to(self.output_dir).as_posix(),
+                    )
