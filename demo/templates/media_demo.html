@@ -6,29 +6,74 @@
     <title>Media Demo</title>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: system-ui, sans-serif;
+            margin: 0;
             padding: 2rem;
+            background: #f7f7f4;
+            color: #222;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
             gap: 1.5rem;
+            align-items: start;
         }
 
         .card {
+            background: white;
             border: 1px solid #ddd;
-            border-radius: 6px;
+            border-radius: 10px;
             padding: 1rem;
+            overflow: hidden;
         }
 
         .card h3 {
-            margin-top: 0;
+            margin: 0 0 1rem;
             font-size: 1rem;
+        }
+
+        .card img,
+        .card video,
+        .card audio,
+        .card iframe {
+            max-width: 100%;
+        }
+
+        .card img,
+        .card video,
+        .card iframe {
+            display: block;
+            height: auto;
+            border-radius: 6px;
+        }
+
+        .card figure {
+            margin: 0;
+        }
+
+        .card figcaption {
+            margin-top: .5rem;
+            font-size: .9rem;
+            line-height: 1.3;
+        }
+
+        .media-type {
+            margin-top: 1rem;
+            color: #666;
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
         }
     </style>
 </head>
 <body>
+<div class="page">
 
 <h1>Media Demo</h1>
 
@@ -39,12 +84,13 @@
 
             {% render_media asset %}
 
-            <p><small>{{ asset.media_type }}</small></p>
+            <p class="media-type">{{ asset.media_type }}</p>
         </div>
     {% empty %}
         <p>No media found.</p>
     {% endfor %}
 </div>
 
+</div>
 </body>
 </html>
