@@ -19,13 +19,13 @@ from django.urls import reverse
 from PIL import Image
 
 from wbr_media.admin import MediaAssetAdmin
+from wbr_media.checks import check_image_profiles
 from wbr_media.models import (
     ImageMetadata,
     MediaAsset,
     classify_media_type,
     media_upload_path,
 )
-from wbr_media.checks import check_image_profiles
 from wbr_media.transfer import MediaImportError, WBRMediaHandler
 from wbr_media.transfer.files import MediaExportResult, MediaFileExporter
 
