@@ -1,13 +1,15 @@
+import hashlib
+import json
 from dataclasses import dataclass
 from pathlib import Path
-import json
+from zipfile import ZIP_DEFLATED, ZipFile
+
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
 from wbr_media.models import MediaAsset
+
 from .manifest import MEDIA_MANIFEST_FILENAME, build_manifest
-import hashlib
-from zipfile import ZIP_DEFLATED, ZipFile
 
 
 def sha256_zip_member(archive: ZipFile, name: str) -> str:

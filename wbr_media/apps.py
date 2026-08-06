@@ -7,7 +7,7 @@ class WbrMediaConfig(AppConfig):
     verbose_name = "WBR Media"
 
     def ready(self):
-        import wbr_media.signals
+        import wbr_media.signals  # noqa: F401
 
 
 default_app_config = "wbr_media.apps.WbrMediaConfig"

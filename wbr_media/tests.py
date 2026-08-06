@@ -1,27 +1,31 @@
 import io
+import json
 import shutil
 import tempfile
 from pathlib import Path
-import json
-import pytest
+from types import SimpleNamespace
+from zipfile import ZipFile
 
+import pytest
 from django.contrib.admin.sites import AdminSite
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.management import call_command
+from django.template import Context, Template
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from PIL import Image
-from django.template import Context, Template
-from types import SimpleNamespace
-from django.core.files.base import ContentFile
-from zipfile import ZipFile
-from django.core.files.storage import default_storage
-from django.core.management import call_command
 
 from wbr_media.admin import MediaAssetAdmin
-from wbr_media.models import ImageMetadata, MediaAsset
-from wbr_media.models import classify_media_type, media_upload_path
+from wbr_media.models import (
+    ImageMetadata,
+    MediaAsset,
+    classify_media_type,
+    media_upload_path,
+)
 from wbr_media.transfer import MediaImportError, WBRMediaHandler
-from wbr_media.transfer.files import MediaFileExporter, MediaExportResult
+from wbr_media.transfer.files import MediaExportResult, MediaFileExporter
 
 
 def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
