@@ -123,4 +123,18 @@ MEDIA_ROOT = BASE_DIR / "media"
 # WBR Media settings
 WBR_MEDIA = {
     "UPLOAD_TO": "wbr_media/%Y/%m/",
+    "IMAGE_PROFILES": {
+        "thumbnail": {
+            "width": 360,
+            "height": 640,
+            "fit": "crop",
+            "position": "center",
+        },
+        "card": {
+            "width": 640,
+            "height": 360,
+            "fit": "crop",
+            "position": "center",
+        },
+    },
 }

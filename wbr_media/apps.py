@@ -8,6 +8,7 @@ class WbrMediaConfig(AppConfig):
 
     def ready(self):
         import wbr_media.signals  # noqa: F401
+        import wbr_media.checks  # noqa: F401
 
 
 default_app_config = "wbr_media.apps.WbrMediaConfig"
