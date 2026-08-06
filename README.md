@@ -241,9 +241,7 @@ both metadata and file export steps. This guarantees that `data.json` and the
 physical-file archive contain the same assets:
 
 ```python
-assets = list(
-    MediaAsset.objects.filter(title__startswith="Campaign").order_by("file")
-)
+assets = list(MediaAsset.objects.filter(title__startswith="Campaign").order_by("file"))
 
 data = WBRMediaHandler().export_data(assets=assets)
 media_result = MediaFileExporter(

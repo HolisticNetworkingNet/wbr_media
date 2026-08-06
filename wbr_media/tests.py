@@ -446,7 +446,9 @@ class MediaExportImportTests(MediaAssetBaseTestCase):
         )
         selected = MediaAsset.objects.get(title="Selected")
 
-        payload = self.get_handler().export_data(assets=MediaAsset.objects.filter(pk=selected.pk))
+        payload = self.get_handler().export_data(
+            assets=MediaAsset.objects.filter(pk=selected.pk)
+        )
 
         self.assertEqual(
             [row["file"] for row in payload["assets"]], [selected.file.name]
