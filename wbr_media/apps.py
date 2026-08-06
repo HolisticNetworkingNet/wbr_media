@@ -1,5 +1,6 @@
 from django.apps import AppConfig
 
+
 class WbrMediaConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
     name = "wbr_media"
@@ -7,5 +8,6 @@ class WbrMediaConfig(AppConfig):
 
     def ready(self):
         import wbr_media.signals
+
 
 default_app_config = "wbr_media.apps.WbrMediaConfig"

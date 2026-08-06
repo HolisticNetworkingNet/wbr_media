@@ -23,6 +23,7 @@ from wbr_media.models import classify_media_type, media_upload_path
 from wbr_media.transfer import MediaImportError, WBRMediaHandler
 from wbr_media.transfer.files import MediaFileExporter, MediaExportResult
 
+
 def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     buffer = io.BytesIO()
     image = Image.new("RGBA", size, color)
@@ -164,7 +165,7 @@ class RenderMediaTemplateTagTests(MediaAssetBaseTestCase):
             Context({"asset": None})
         )
         no_file = Template("{% load wbr_media_tags %}{% render_media asset %}").render(
-            Context({"asset": MediaAsset(title='No file')})
+            Context({"asset": MediaAsset(title="No file")})
         )
 
         self.assertEqual(no_asset, "")
@@ -218,7 +219,7 @@ class RenderMediaTemplateTagTests(MediaAssetBaseTestCase):
             "{% load wbr_media_tags %}{% render_media asset display='bare' class_name='hero' alt='Explicit alt' %}"
         ).render(Context({"asset": asset}))
 
-        self.assertIn('<img', rendered)
+        self.assertIn("<img", rendered)
         self.assertIn('class="hero"', rendered)
         self.assertIn('alt="Explicit alt"', rendered)
 
@@ -311,6 +312,7 @@ class DemoViewTests(MediaAssetBaseTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Demo image")
         self.assertContains(response, "image")
+
 
 class MediaExportImportTests(MediaAssetBaseTestCase):
     def get_context(self):
@@ -543,6 +545,7 @@ def test_media_file_exporter_manifest_includes_assets(tmp_path, settings):
     assert manifest_asset["size_bytes"] == len(b"fake image data")
     assert len(manifest_asset["sha256"]) == 64
 
+
 @pytest.mark.django_db
 def test_media_file_exporter_copies_asset_file(tmp_path, settings):
     settings.MEDIA_ROOT = tmp_path / "media-root"
@@ -560,6 +563,7 @@ def test_media_file_exporter_copies_asset_file(tmp_path, settings):
 
     assert exported_file.exists()
     assert exported_file.read_bytes() == b"fake image data"
+
 
 @pytest.mark.django_db
 def test_media_file_exporter_skips_missing_asset_file(tmp_path):
@@ -581,6 +585,7 @@ def test_media_file_exporter_skips_missing_asset_file(tmp_path):
     exported_file = output_dir / "files" / asset.file.name
 
     assert not exported_file.exists()
+
 
 @pytest.mark.django_db
 def test_wbr_media_bundle_round_trip_restores_database_and_files(tmp_path, settings):

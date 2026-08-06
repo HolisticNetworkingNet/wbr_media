@@ -6,6 +6,6 @@ from django.conf import settings
 from .views import media_demo
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path("admin/", admin.site.urls),
     path("media-demo/", media_demo, name="media_demo"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

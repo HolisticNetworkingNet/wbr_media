@@ -9,6 +9,7 @@ from .manifest import MEDIA_MANIFEST_FILENAME, build_manifest
 import hashlib
 from zipfile import ZIP_DEFLATED, ZipFile
 
+
 def sha256_zip_member(archive: ZipFile, name: str) -> str:
     h = hashlib.sha256()
 
@@ -203,9 +204,7 @@ class MediaFileImporter:
                     validation_errors=self.validation_errors,
                 )
 
-            manifest = json.loads(
-                archive.read(MEDIA_MANIFEST_FILENAME).decode("utf-8")
-            )
+            manifest = json.loads(archive.read(MEDIA_MANIFEST_FILENAME).decode("utf-8"))
 
             self.validate_archive(archive, manifest, archive_paths)
 

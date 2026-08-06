@@ -9,6 +9,7 @@ def delete_file_on_delete(sender, instance, **kwargs):
     if instance.file:
         instance.file.delete(save=False)
 
+
 @receiver(pre_save, sender=MediaAsset)
 def delete_old_file_on_change(sender, instance, **kwargs):
     if not instance.pk:
