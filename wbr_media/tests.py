@@ -8,6 +8,7 @@ from zipfile import ZipFile
 
 import pytest
 from django.contrib.admin.sites import AdminSite
+from django.core import checks
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -18,6 +19,7 @@ from django.urls import reverse
 from PIL import Image
 
 from wbr_media.admin import MediaAssetAdmin
+from wbr_media.checks import check_image_profiles
 from wbr_media.models import (
     ImageMetadata,
     MediaAsset,
@@ -33,6 +35,43 @@ def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     image = Image.new("RGBA", size, color)
     image.save(buffer, format=image_format)
     return buffer.getvalue()
+
+
+def test_image_profile_configuration_is_valid(settings):
+    settings.WBR_MEDIA = {
+        "IMAGE_PROFILES": {
+            "card": {"width": 640, "height": 360, "fit": "crop"},
+        }
+    }
+
+    assert check_image_profiles(None) == []
+
+
+def test_image_profile_configuration_warns_on_exact_duplicates(settings):
+    settings.WBR_MEDIA = {
+        "IMAGE_PROFILES": {
+            "card": {"width": 640, "height": 360, "fit": "crop"},
+            "feature": {"width": 640, "height": 360, "fit": "crop"},
+        }
+    }
+
+    result = check_image_profiles(None)
+
+    assert len(result) == 1
+    assert isinstance(result[0], checks.Warning)
+    assert result[0].id == "wbr_media.W001"
+
+
+def test_image_profile_configuration_rejects_invalid_dimensions(settings):
+    settings.WBR_MEDIA = {
+        "IMAGE_PROFILES": {
+            "card": {"width": 0, "height": 360, "fit": "crop"},
+        }
+    }
+
+    result = check_image_profiles(None)
+
+    assert any(error.id == "wbr_media.E005" for error in result)
 
 
 class MediaAssetBaseTestCase(TestCase):
