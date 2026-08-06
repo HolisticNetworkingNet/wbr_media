@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/wbr_media.iml" filepath="$PROJECT_DIR$/.idea/wbr_media.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/wbr-media.iml" filepath="$PROJECT_DIR$/.idea/wbr-media.iml" />
     </modules>
   </component>
 </project>
