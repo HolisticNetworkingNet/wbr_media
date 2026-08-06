@@ -5,24 +5,38 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wbr_media', '0002_remove_mediaasset_height_remove_mediaasset_width_and_more'),
+        ("wbr_media", "0002_remove_mediaasset_height_remove_mediaasset_width_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ImageMetadata',
+            name="ImageMetadata",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('width', models.IntegerField()),
-                ('height', models.IntegerField()),
-                ('format', models.CharField(blank=True, max_length=50)),
-                ('color_mode', models.CharField(blank=True, max_length=50)),
-                ('has_alpha', models.BooleanField(default=False)),
-                ('dpi_x', models.IntegerField(blank=True, null=True)),
-                ('dpi_y', models.IntegerField(blank=True, null=True)),
-                ('media', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='image_metadata', to='wbr_media.mediaasset')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("width", models.IntegerField()),
+                ("height", models.IntegerField()),
+                ("format", models.CharField(blank=True, max_length=50)),
+                ("color_mode", models.CharField(blank=True, max_length=50)),
+                ("has_alpha", models.BooleanField(default=False)),
+                ("dpi_x", models.IntegerField(blank=True, null=True)),
+                ("dpi_y", models.IntegerField(blank=True, null=True)),
+                (
+                    "media",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="image_metadata",
+                        to="wbr_media.mediaasset",
+                    ),
+                ),
             ],
         ),
     ]

@@ -1,5 +1,6 @@
 from ..models import ImageMetadata, MediaAsset
 
+
 class MediaImportError(Exception):
     pass
 

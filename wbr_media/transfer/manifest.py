@@ -38,8 +38,5 @@ def asset_to_manifest_row(asset, files_dir: Path) -> dict:
 def build_manifest(*, assets, files_dir: Path) -> dict:
     return {
         "version": MEDIA_MANIFEST_VERSION,
-        "assets": [
-            asset_to_manifest_row(asset, files_dir)
-            for asset in assets
-        ],
+        "assets": [asset_to_manifest_row(asset, files_dir) for asset in assets],
     }

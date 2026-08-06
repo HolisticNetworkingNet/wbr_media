@@ -5,53 +5,56 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wbr_media', '0001_initial'),
+        ("wbr_media", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='mediaasset',
-            name='height',
+            model_name="mediaasset",
+            name="height",
         ),
         migrations.RemoveField(
-            model_name='mediaasset',
-            name='width',
+            model_name="mediaasset",
+            name="width",
         ),
         migrations.AddField(
-            model_name='mediaasset',
-            name='description',
+            model_name="mediaasset",
+            name="description",
             field=models.TextField(blank=True),
         ),
         migrations.AddField(
-            model_name='mediaasset',
-            name='file_name',
+            model_name="mediaasset",
+            name="file_name",
             field=models.CharField(blank=True, max_length=255),
         ),
         migrations.AddField(
-            model_name='mediaasset',
-            name='file_size',
+            model_name="mediaasset",
+            name="file_size",
             field=models.BigIntegerField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='mediaasset',
-            name='media_type',
-            field=models.CharField(blank=True, help_text='image, audio, video, document, etc.', max_length=50),
+            model_name="mediaasset",
+            name="media_type",
+            field=models.CharField(
+                blank=True,
+                help_text="image, audio, video, document, etc.",
+                max_length=50,
+            ),
         ),
         migrations.AddField(
-            model_name='mediaasset',
-            name='mime_type',
+            model_name="mediaasset",
+            name="mime_type",
             field=models.CharField(blank=True, max_length=100),
         ),
         migrations.AddField(
-            model_name='mediaasset',
-            name='updated_at',
+            model_name="mediaasset",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='mediaasset',
-            name='file',
+            model_name="mediaasset",
+            name="file",
             field=models.FileField(upload_to=wbr_media.models.media_upload_path),
         ),
     ]

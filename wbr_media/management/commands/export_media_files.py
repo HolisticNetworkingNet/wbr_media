@@ -41,11 +41,11 @@ class Command(BaseCommand):
             rmtree(result.output_directory)
 
             self.stdout.write(
-                self.style.SUCCESS(f"Cleaned export directory: {result.output_directory}")
+                self.style.SUCCESS(
+                    f"Cleaned export directory: {result.output_directory}"
+                )
             )
-            self.stdout.write(
-                self.style.SUCCESS(f"Final zip: {final_zip_path}")
-            )
+            self.stdout.write(self.style.SUCCESS(f"Final zip: {final_zip_path}"))
 
         self.stdout.write(self.style.SUCCESS("Media export complete."))
 

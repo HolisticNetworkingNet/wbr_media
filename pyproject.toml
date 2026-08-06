@@ -26,6 +26,17 @@ Homepage = "https://github.com/holisticnetworkingnet/wbr_media"
 Repository = "https://github.com/holisticnetworkingnet/wbr_media"
 Issues = "https://github.com/holisticnetworkingnet/wbr_media/issues"
 
+[project.optional-dependencies]
+dev = [
+    "build>=1.2",
+    "ruff>=0.9,<1",
+    "twine>=6.1",
+]
+test = [
+    "pytest>=8.0",
+    "pytest-django>=4.8",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["wbr_media*"]
@@ -38,3 +49,16 @@ wbr_media = ["templates/**/*.html", "static/**/*"]
 DJANGO_SETTINGS_MODULE = "demo.demo.settings"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
 pythonpath = ["."]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+extend-exclude = ["demo/exports"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I", "UP", "B"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
