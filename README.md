@@ -301,6 +301,18 @@ are exported.
 
 ## Low-Level Commands
 
+Generate configured thumbnails for all image assets:
+
+```bash
+python manage.py generate_thumbnails
+```
+
+Regenerate thumbnails for selected assets by ID:
+
+```bash
+python manage.py generate_thumbnails --asset-id 12 --asset-id 18
+```
+
 The application also exposes lower-level commands for working directly with physical media.
 
 Export physical assets:

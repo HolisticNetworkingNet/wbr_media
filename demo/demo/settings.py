@@ -50,7 +50,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "demo.demo.urls"
+ROOT_URLCONF = "demo.urls"
 
 TEMPLATES = [
     {
@@ -67,7 +67,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "demo.demo.wsgi.application"
+WSGI_APPLICATION = "demo.wsgi.application"
 
 
 # Database
@@ -126,7 +126,7 @@ WBR_MEDIA = {
     "IMAGE_PROFILES": {
         "thumbnail": {
             "width": 360,
-            "height": 640,
+            "height": 360,
             "fit": "crop",
             "position": "center",
         },
@@ -136,5 +136,17 @@ WBR_MEDIA = {
             "fit": "crop",
             "position": "center",
         },
+        "same": {
+            "width": 480,
+            "height": 480,
+            "fit": "crop",
+            "position": "center",
+        },
+        "samesies": {
+            "width": 480,
+            "height": 480,
+            "fit": "crop",
+            "position": "center",
+        }
     },
 }
