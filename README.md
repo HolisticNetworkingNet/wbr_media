@@ -214,6 +214,46 @@ The import process:
 
 If validation fails, restoration is aborted before modifying the destination installation.
 
+## Scoped Exports
+
+Exports can be limited to a caller-selected collection of `MediaAsset` records. The
+host application owns the selection rules; WBR Media does not inspect site IDs,
+host models, or multisite relationships.
+
+Pass either a `QuerySet` or an iterable of `MediaAsset` objects to the export APIs:
+
+```python
+from wbr_media.models import MediaAsset
+from wbr_media.transfer import MediaFileExporter, WBRMediaHandler
+
+assets = MediaAsset.objects.filter(title__startswith="Campaign")
+
+data = WBRMediaHandler().export_data(assets=assets)
+MediaFileExporter(
+    site=None,
+    output_dir="./exports/media",
+    assets=assets,
+).run()
+```
+
+For a combined export, resolve the selection once and pass that same collection to
+both metadata and file export steps. This guarantees that `data.json` and the
+physical-file archive contain the same assets:
+
+```python
+assets = list(MediaAsset.objects.filter(title__startswith="Campaign").order_by("file"))
+
+data = WBRMediaHandler().export_data(assets=assets)
+media_result = MediaFileExporter(
+    site=None,
+    output_dir="./exports/media",
+    assets=assets,
+).run()
+```
+
+When `assets` is omitted, the existing behavior is preserved and all media assets
+are exported.
+
 ---
 
 ## Low-Level Commands

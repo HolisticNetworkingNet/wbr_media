@@ -5,6 +5,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from django.core.management.base import BaseCommand
 
+from wbr_media.models import MediaAsset
 from wbr_media.transfer.files import MediaFileExporter
 from wbr_media.transfer.handler import WBRMediaHandler
 
@@ -22,8 +23,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         output_path = Path(options["output"])
 
+        # Resolve the selection once so metadata and physical files cannot
+        # diverge when this command is used by a host application with scope.
+        assets = list(MediaAsset.objects.all().order_by("file"))
+
         handler = WBRMediaHandler()
-        data = handler.export_data(site=None, context=None)
+        data = handler.export_data(site=None, context=None, assets=assets)
 
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
@@ -38,6 +43,7 @@ class Command(BaseCommand):
             media_result = MediaFileExporter(
                 site=None,
                 output_dir=media_dir,
+                assets=assets,
             ).run()
 
             output_path.parent.mkdir(parents=True, exist_ok=True)

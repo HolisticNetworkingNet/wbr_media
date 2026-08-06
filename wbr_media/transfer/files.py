@@ -58,9 +58,10 @@ class MediaRestoreResult:
 
 
 class MediaFileExporter:
-    def __init__(self, site, output_dir):
+    def __init__(self, site, output_dir, assets=None):
         self.site = site
         self.output_dir = Path(output_dir)
+        self.selected_assets = assets
         self.files_dir = self.output_dir / "files"
         self.validation_errors = []
 
@@ -88,7 +89,10 @@ class MediaFileExporter:
         )
 
     def discover_assets(self):
-        return MediaAsset.objects.all().order_by("file")
+        if self.selected_assets is None:
+            return list(MediaAsset.objects.all().order_by("file"))
+
+        return list(self.selected_assets)
 
     def write_manifest(self):
         self.manifest_path = self.output_dir / MEDIA_MANIFEST_FILENAME
