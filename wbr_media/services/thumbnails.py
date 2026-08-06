@@ -15,9 +15,9 @@ def _profile_name(
 ):
     path = Path(filename)
     profile_suffix = f"-{profile_name}" if include_profile else ""
-    return str(path.with_name(
-        f"{path.stem}{profile_suffix}-{width}x{height}{extension}"
-    ))
+    return str(
+        path.with_name(f"{path.stem}{profile_suffix}-{width}x{height}{extension}")
+    )
 
 
 def _output_format(source, profile):
@@ -65,7 +65,10 @@ def _render(source, profile):
             )
         background = (0, 0, 0, 0) if "A" in source.getbands() else "white"
         canvas = Image.new(source.mode, target, background)
-        canvas.paste(contained, ((width - contained.width) // 2, (height - contained.height) // 2))
+        canvas.paste(
+            contained,
+            ((width - contained.width) // 2, (height - contained.height) // 2),
+        )
         return canvas
 
     raise ValueError(f"Unsupported image fit mode: {fit}")
@@ -147,6 +150,11 @@ def remove_renditions(filename):
     path = Path(filename)
     directory = str(path.parent)
     prefix = f"{path.stem}-"
-    for candidate in default_storage.listdir(directory)[1]:
+    try:
+        files = default_storage.listdir(directory)[1]
+    except FileNotFoundError:
+        return
+
+    for candidate in files:
         if candidate.startswith(prefix):
             default_storage.delete(str(Path(directory) / candidate))
