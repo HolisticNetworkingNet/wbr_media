@@ -36,6 +36,9 @@ test = [
     "pytest>=8.0",
     "pytest-django>=4.8",
 ]
+security = [
+    "pip-audit>=2.7,<3",
+]
 
 [tool.setuptools.packages.find]
 where = ["."]

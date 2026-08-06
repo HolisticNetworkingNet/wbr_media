@@ -1,0 +1,58 @@
+name: Dependency and secret security
+
+on:
+  pull_request:
+  schedule:
+    - cron: "23 13 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dependency-security-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install project and security dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[security]"
+
+      - name: Verify dependency consistency
+        run: python -m pip check
+
+      - name: Remove the local project distribution
+        run: python -m pip uninstall --yes wbr-media
+
+      - name: Audit installed dependencies
+        run: python -m pip_audit --local --strict --progress-spinner off
+
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan repository for secrets
+        run: >-
+          docker run --rm
+          --volume "${{ github.workspace }}:/repo"
+          zricethezav/gitleaks:v8.24.2
+          detect --source=/repo --no-banner --redact --exit-code 1
