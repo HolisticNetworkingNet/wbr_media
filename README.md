@@ -12,22 +12,6 @@ Portable media infrastructure for Django.
 
 ---
 
-# 📷 Screenshots
-
-## Media Index
-
-A lightweight media library view with previews and metadata.
-
-![Media index](docs/images/wbr_media_index.png)
-
-## Media Detail
-
-Asset inspection with preview, metadata, and image properties.
-
-![Media detail](docs/images/wbr_media_admin.png)
-
----
-
 # Why WBR Media?
 
 Django provides excellent support for uploading files, but it intentionally leaves higher-level media management to individual applications.
@@ -69,6 +53,22 @@ You certainly can—but most projects eventually end up rebuilding the same infr
 - Flexible template rendering
 - Media portability with checksum validation
 - Complete export/import workflow for media libraries
+
+---
+
+# 📷 Screenshots
+
+## Media Index
+
+A lightweight media library view with previews and metadata.
+
+![Media index](docs/images/wbr_media_index.png)
+
+## Media Detail
+
+Asset inspection with preview, metadata, and image properties.
+
+![Media detail](docs/images/wbr_media_admin.png)
 
 ---
 
@@ -117,16 +117,6 @@ INSTALLED_APPS = [
 ]
 ```
 
-Configure the upload location.
-
-> **Note:** The configured upload path is appended to Django's `MEDIA_ROOT`.
-
-```python
-WBR_MEDIA = {
-    "UPLOAD_TO": "wbr_media/%Y/%m/",
-}
-```
-
 Run migrations:
 
 ```bash
@@ -137,13 +127,66 @@ python manage.py migrate
 
 # ⚙️ Configuration
 
-Available settings:
+The configured upload path is appended to Django's `MEDIA_ROOT`.
+
+Available settings include the upload path and named image profiles:
 
 ```python
 WBR_MEDIA = {
     "UPLOAD_TO": "assets/originals/%Y/%m/",
+    "IMAGE_PROFILES": {
+        "thumbnail": {
+            "width": 360,
+            "height": 640,
+            "fit": "crop",
+            "position": "center",
+        },
+        "card": {
+            "width": 640,
+            "height": 360,
+            "fit": "crop",
+            "position": "center",
+        },
+    },
 }
 ```
+
+## Image profiles
+
+Image profiles define named renditions that can be generated from uploaded
+images. A profile must provide positive `width` and `height` values in output
+pixels.
+
+Supported profile options are:
+
+| Option | Description |
+|--------|-------------|
+| `width` | Target width in output pixels. |
+| `height` | Target height in output pixels. |
+| `fit` | `crop`, `scale`, or `contain`; defaults to `crop`. |
+| `position` | Crop position or focal point, such as `center` or `top`. |
+| `format` | Optional output format. |
+| `quality` | Optional encoder quality from 1 to 100. |
+| `upscale` | Whether smaller source images may be enlarged. |
+| `version` | Optional profile version for invalidating older renditions. |
+
+The fit modes have different results:
+
+- `crop` fills the target box and trims overflow, producing exactly the
+  configured dimensions.
+- `scale` preserves the complete image within the configured bounds, so the
+  actual output dimensions may be smaller than the requested dimensions.
+- `contain` preserves the complete image within an exact canvas and may leave
+  empty space.
+
+The requested profile dimensions and the actual generated dimensions should be
+tracked separately. DPI is preserved as image metadata but does not determine
+thumbnail dimensions for web display.
+
+Profile configuration is checked by Django's system-check framework. Invalid
+dimensions and unsupported values produce errors. Exact duplicate profiles
+produce warnings because they may generate redundant files, but they are not
+configuration errors.
 
 ---
 
