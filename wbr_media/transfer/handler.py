@@ -35,10 +35,15 @@ class WBRMediaHandler(MediaExportHandler):
             if not row.get("file"):
                 raise MediaImportError("MediaAsset requires file.")
 
-    def export_data(self, site, context):
+    def export_data(self, site=None, context=None, assets=None):
+        selected_assets = (
+            list(MediaAsset.objects.all().order_by("file"))
+            if assets is None
+            else list(assets)
+        )
         assets = []
 
-        for asset in MediaAsset.objects.all().order_by("file"):
+        for asset in selected_assets:
             row = {
                 "file": asset.file.name,
                 "title": asset.title,

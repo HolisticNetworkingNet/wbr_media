@@ -431,6 +431,48 @@ class MediaExportImportTests(MediaAssetBaseTestCase):
             ).exists()
         )
 
+    def test_export_data_accepts_scoped_queryset(self):
+        MediaAsset.objects.bulk_create(
+            [
+                MediaAsset(
+                    file="assets/originals/2026/04/selected.jpg",
+                    title="Selected",
+                ),
+                MediaAsset(
+                    file="assets/originals/2026/04/excluded.jpg",
+                    title="Excluded",
+                ),
+            ]
+        )
+        selected = MediaAsset.objects.get(title="Selected")
+
+        payload = self.get_handler().export_data(assets=MediaAsset.objects.filter(pk=selected.pk))
+
+        self.assertEqual(
+            [row["file"] for row in payload["assets"]], [selected.file.name]
+        )
+
+    def test_export_data_accepts_scoped_iterable(self):
+        MediaAsset.objects.bulk_create(
+            [
+                MediaAsset(
+                    file="assets/originals/2026/04/selected.jpg",
+                    title="Selected",
+                ),
+                MediaAsset(
+                    file="assets/originals/2026/04/excluded.jpg",
+                    title="Excluded",
+                ),
+            ]
+        )
+        selected = MediaAsset.objects.get(title="Selected")
+
+        payload = self.get_handler().export_data(assets=[selected])
+
+        self.assertEqual(
+            [row["file"] for row in payload["assets"]], [selected.file.name]
+        )
+
     def test_validate_rejects_non_object_payload(self):
         handler = self.get_handler()
         context = self.get_context()
@@ -567,6 +609,32 @@ def test_media_file_exporter_copies_asset_file(tmp_path, settings):
 
     assert exported_file.exists()
     assert exported_file.read_bytes() == b"fake image data"
+
+
+@pytest.mark.django_db
+def test_media_file_exporter_accepts_scoped_assets(tmp_path, settings):
+    settings.MEDIA_ROOT = tmp_path / "media-root"
+
+    selected = MediaAsset.objects.create(
+        file=ContentFile(b"selected", name="uploads/selected.jpg"),
+    )
+    excluded = MediaAsset.objects.create(
+        file=ContentFile(b"excluded", name="uploads/excluded.jpg"),
+    )
+
+    output_dir = tmp_path / "media-export"
+    result = MediaFileExporter(
+        site=None,
+        output_dir=output_dir,
+        assets=[selected],
+    ).run()
+
+    assert [asset.pk for asset in result.assets] == [selected.pk]
+    assert (output_dir / "files" / selected.file.name).exists()
+    assert not (output_dir / "files" / excluded.file.name).exists()
+
+    manifest = json.loads((output_dir / "media_manifest.json").read_text())
+    assert [row["file"] for row in manifest["assets"]] == [selected.file.name]
 
 
 @pytest.mark.django_db
