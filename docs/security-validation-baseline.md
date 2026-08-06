@@ -8,23 +8,23 @@ formal security assessment.
 
 | Control | Proof Goblin baseline | wbr_media status | Follow-up |
 | --- | --- | --- | --- |
-| Source linting and formatting | Ruff lint plus format checks in CI and pre-commit | Missing | Add to the development tool set and CI |
-| Test quality | Pytest with warnings treated as errors across a supported-version matrix | Basic pytest job; warnings are not errors and there is no matrix | Define the supported matrix and run `python -m pytest -q -W error` |
-| Dependency consistency | `pip check` after installing all dependency groups | Missing | Add an explicit dependency-consistency check |
-| Dependency vulnerability audit | Strict `pip-audit` job on pull requests and weekly schedule | Missing | Add `pip-audit --local --strict` after removing the local project package |
-| Dependency update monitoring | Dependabot for Python and GitHub Actions | Missing | Add weekly Dependabot configuration |
-| Package build | Isolated PEP 517 build of wheel and source distribution | Build occurs only in the publish workflow | Add build validation to pull-request checks |
-| Package metadata | Strict `twine check` | Missing | Validate all built artifacts with `twine check --strict` |
-| Package contents | Explicit distribution-content boundary validation | Missing | Define and test the intended package boundary |
-| Clean artifact install | Wheel and sdist installed into clean environments | Missing | Add clean-install smoke validation |
-| Workflow supply chain | Third-party actions pinned to commit SHA; read-only default permissions | Actions use floating major tags; permissions are not explicitly restricted | Pin actions and set `contents: read` by default |
-| Workflow concurrency | Superseded runs are cancelled for checks | Missing | Add concurrency groups to validation workflows |
-| Release provenance | Protected source/version verification, one validated artifact bundle, OIDC publishing | Publish workflow builds and publishes directly on release | Address in the release-validation work after this audit |
+| Source linting and formatting | Ruff lint plus format checks in CI and pre-commit | Implemented in pull-request and release CI | Keep the local and CI commands aligned |
+| Test quality | Pytest with warnings treated as errors across a supported-version matrix | Implemented for Python 3.12–3.14 | Keep the supported matrix current |
+| Dependency consistency | `pip check` after installing all dependency groups | Implemented in dependency-security CI | Review failures before merging |
+| Dependency vulnerability audit | Strict `pip-audit` job on pull requests and weekly schedule | Implemented with the local project removed before audit | Review and document exceptions narrowly |
+| Dependency update monitoring | Dependabot for Python and GitHub Actions | Implemented with weekly grouped updates | Review Dependabot PRs promptly |
+| Package build | Isolated PEP 517 build of wheel and source distribution | Implemented in pull-request and release CI | Keep artifact checks required |
+| Package metadata | Strict `twine check` | Implemented in pull-request and release CI | Fix metadata failures before release |
+| Package contents | Explicit distribution-content boundary validation | Implemented by `scripts/validate_distribution.py` | Update intentionally when package contents change |
+| Clean artifact install | Wheel and sdist installed into clean environments | Implemented by `scripts/validate_installation.py` | Keep smoke test minimal and representative |
+| Workflow supply chain | Third-party actions pinned to commit SHA; read-only default permissions | Implemented in CI and release workflows | Keep action pins current through Dependabot |
+| Workflow concurrency | Superseded runs are cancelled for checks | Implemented for validation and security workflows | Retain cancellation on new workflows |
+| Release provenance | Protected source/version verification, one validated artifact bundle, OIDC publishing | Implemented in the release workflow | Publish only through the workflow |
 
 ## Scope decision
 
-The immediate scope for #24 is to establish the baseline and identify gaps.
-Implementation is tracked by the follow-up issues linked from #23:
+The audit established the baseline and identified gaps. Implementation is now
+covered by the follow-up issues linked from #23:
 
 - package and artifact validation
 - dependency and secret scanning
@@ -36,12 +36,13 @@ documentation build, CLI checks, or multi-platform matrix. Those controls do
 not apply directly to this Django package unless the project later adopts the
 same surfaces.
 
-## Recommended implementation order
+## Implemented order
 
-1. Add development/security optional dependencies and Ruff configuration.
-2. Add pull-request checks for linting, tests, package metadata, contents, and
+1. Added development/security optional dependencies and Ruff configuration.
+2. Added pull-request checks for linting, tests, package metadata, contents, and
    clean artifact installation.
-3. Add dependency auditing, Dependabot, and secret scanning.
-4. Harden release publication around the already-validated artifacts and
+3. Added dependency auditing, Dependabot, and secret scanning.
+4. Hardened release publication around the already-validated artifacts and
    least-privilege permissions.
-5. Document the local and CI release gates.
+5. Documented the local and CI release gates in `README.md` and
+   `docs/releasing.md`.

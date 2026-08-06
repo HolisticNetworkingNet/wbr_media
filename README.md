@@ -262,8 +262,50 @@ http://127.0.0.1:8000/media-demo/
 Run the complete test suite:
 
 ```bash
-pytest
+python -m pytest -q -W error
 ```
+
+## Validation checks
+
+Install the development and test tools from the repository root:
+
+```bash
+python -m pip install -e ".[dev,test]"
+```
+
+Run the same quality and package checks used by pull-request CI:
+
+```bash
+python -m ruff check .
+python -m ruff format --check .
+python -m pytest -q -W error
+python -m build --outdir dist
+python -m twine check --strict dist/*
+python scripts/validate_distribution.py dist
+python scripts/validate_installation.py dist
+```
+
+Run the dependency audit separately:
+
+```bash
+python -m pip install -e ".[security]"
+python -m pip check
+python -m pip uninstall --yes wbr-media
+python -m pip_audit --local --strict --progress-spinner off
+```
+
+Run the repository secret scan with Docker:
+
+```bash
+docker run --rm \
+  --volume "$PWD:/repo" \
+  zricethezav/gitleaks:v8.24.2 \
+  detect --source=/repo --no-banner --redact --exit-code 1
+```
+
+GitHub Actions runs these checks for pushes and pull requests. Dependabot
+checks Python and GitHub Actions dependencies weekly. See
+[`docs/releasing.md`](docs/releasing.md) for release gates and publishing.
 
 ---
 
