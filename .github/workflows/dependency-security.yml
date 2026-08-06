@@ -51,7 +51,8 @@ jobs:
           fetch-depth: 0
 
       - name: Scan repository for secrets
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_ENABLE_COMMENTS: false
+        run: >-
+          docker run --rm
+          --volume "${{ github.workspace }}:/repo"
+          zricethezav/gitleaks:v8.24.2
+          detect --source=/repo --no-banner --redact --exit-code 1
