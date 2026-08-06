@@ -1,6 +1,6 @@
 from __future__ import annotations
-import hashlib
 
+import hashlib
 from pathlib import Path
 
 MEDIA_MANIFEST_VERSION = 1

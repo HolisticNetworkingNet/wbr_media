@@ -7,7 +7,6 @@ import tarfile
 import zipfile
 from pathlib import Path
 
-
 REQUIRED_SUFFIXES = {
     "__init__.py",
     "apps.py",
