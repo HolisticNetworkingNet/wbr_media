@@ -26,6 +26,7 @@ from wbr_media.models import (
     classify_media_type,
     media_upload_path,
 )
+from wbr_media.services.storage import collision_name, rendition_name
 from wbr_media.transfer import MediaImportError, WBRMediaHandler
 from wbr_media.transfer.files import MediaExportResult, MediaFileExporter
 
@@ -35,6 +36,19 @@ def build_png_bytes(size=(20, 10), color=(255, 0, 0, 255), image_format="PNG"):
     image = Image.new("RGBA", size, color)
     image.save(buffer, format=image_format)
     return buffer.getvalue()
+
+
+def test_rendition_name_preserves_original_directory_and_uses_actual_dimensions():
+    assert (
+        rendition_name("uploads/2026/sunset.jpg", 360, 240, ".jpg")
+        == "uploads/2026/sunset-360x240.jpg"
+    )
+
+
+def test_collision_name_adds_profile_before_dimensions():
+    assert collision_name("uploads/2026/sunset-360x640.jpg", "card") == (
+        "uploads/2026/sunset-card-360x640.jpg"
+    )
 
 
 def test_image_profile_configuration_is_valid(settings):
