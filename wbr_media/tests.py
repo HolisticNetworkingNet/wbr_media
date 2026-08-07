@@ -256,7 +256,7 @@ class RenderMediaTemplateTagTests(MediaAssetBaseTestCase):
         )
 
         rendered = Template(
-            "{% load wbr_media_tags %}" "{% render_media asset alt='Explicit alt' %}"
+            "{% load wbr_media_tags %}{% render_media asset alt='Explicit alt' %}"
         ).render(Context({"asset": asset}))
 
         self.assertIn('alt="Explicit alt"', rendered)
