@@ -152,9 +152,11 @@ class ThumbnailGenerationTests(MediaAssetBaseTestCase):
                 )
             )
             first = generate_renditions(asset)
-            first_bytes = default_storage.open(first[0], "rb").read()
+            with default_storage.open(first[0], "rb") as generated:
+                first_bytes = generated.read()
             second = generate_renditions(asset)
-            second_bytes = default_storage.open(second[0], "rb").read()
+            with default_storage.open(second[0], "rb") as generated:
+                second_bytes = generated.read()
 
         self.assertEqual(first, second)
         self.assertEqual(first_bytes, second_bytes)
