@@ -188,6 +188,28 @@ dimensions and unsupported values produce errors. Exact duplicate profiles
 produce warnings because they may generate redundant files, but they are not
 configuration errors.
 
+Configured renditions are generated when an image is uploaded. The original
+file remains the canonical source. Generated filenames use the actual output
+dimensions, for example:
+
+```text
+sunset.jpg
+sunset-640x360.jpg
+sunset-360x240.jpg
+```
+
+When profiles have the same configured dimensions, their names are included to
+keep the files distinct:
+
+```text
+sunset-card-360x640.jpg
+sunset-thumbnail-360x640.jpg
+```
+
+Thumbnail generation is best effort. If an image cannot be processed, the
+original upload remains available and thumbnails can be retried with
+`generate_thumbnails`.
+
 ---
 
 # 📦 Media Portability
@@ -312,6 +334,12 @@ Regenerate thumbnails for selected assets by ID:
 ```bash
 python manage.py generate_thumbnails --asset-id 12 --asset-id 18
 ```
+
+Portable exports contain the canonical originals and media metadata, not
+generated thumbnails. During import, originals are restored first and the
+destination site's configured profiles are regenerated in its storage. This
+keeps portability bundles smaller and supports the usual development-to-
+production workflow.
 
 The application also exposes lower-level commands for working directly with physical media.
 
