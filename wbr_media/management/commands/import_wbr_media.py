@@ -6,6 +6,7 @@ from zipfile import ZipFile
 
 from django.core.management.base import BaseCommand, CommandError
 
+from wbr_media.services import generate_renditions
 from wbr_media.transfer.files import MediaFileImporter
 from wbr_media.transfer.handler import WBRMediaHandler
 
@@ -57,10 +58,28 @@ class Command(BaseCommand):
             handler.validate(data, context)
             imported = handler.import_data(data, context)
 
+            thumbnail_failures = []
+            thumbnails_generated = 0
+            for asset in imported:
+                try:
+                    thumbnails_generated += len(generate_renditions(asset))
+                except Exception as exc:  # pragma: no cover - command boundary
+                    thumbnail_failures.append(f"{asset.file.name}: {exc}")
+
+        if thumbnail_failures:
+            self.stderr.write(
+                self.style.WARNING(
+                    f"Thumbnail regeneration skipped for {len(thumbnail_failures)} asset(s)."
+                )
+            )
+            for failure in thumbnail_failures:
+                self.stderr.write(f"- {failure}")
+
         self.stdout.write(self.style.SUCCESS("WBR Media restore complete."))
         self.stdout.write(f"Bundle: {bundle_path}")
         self.stdout.write(f"Files restored: {len(restore_result.restored)}")
         self.stdout.write(f"Assets imported: {len(imported)}")
+        self.stdout.write(f"Thumbnails generated: {thumbnails_generated}")
 
         for action in context.actions:
             self.stdout.write(f"- {action}")
