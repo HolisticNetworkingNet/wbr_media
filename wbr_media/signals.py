@@ -38,6 +38,4 @@ def generate_image_renditions(sender, instance, raw, **kwargs):
             # Thumbnail generation is derived work and must not make the
             # canonical upload fail. The original remains available for a
             # later retry through generate_thumbnails.
-            logger.exception(
-                "Unable to generate thumbnails for asset %s", instance.pk
-            )
+            logger.exception("Unable to generate thumbnails for asset %s", instance.pk)
