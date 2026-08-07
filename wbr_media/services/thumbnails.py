@@ -123,6 +123,51 @@ def generate_renditions(asset):
     return generated
 
 
+def resolve_rendition(asset, profile_name):
+    """Resolve a generated rendition, returning None when it is unavailable."""
+
+    if not asset or asset.media_type != "image" or not asset.file:
+        return None
+
+    profiles = get_image_profiles()
+    profile = profiles.get(profile_name)
+    if profile is None:
+        return None
+
+    dimension_counts = {}
+    for configured in profiles.values():
+        dimensions = (configured["width"], configured["height"])
+        dimension_counts[dimensions] = dimension_counts.get(dimensions, 0) + 1
+
+    asset.file.open("rb")
+    try:
+        with Image.open(asset.file) as source:
+            source.load()
+            rendered = _render(source, profile)
+            _, extension = _output_format(source, profile)
+            path = rendition_name(
+                asset.file.name, rendered.width, rendered.height, extension
+            )
+            dimensions = (profile["width"], profile["height"])
+            if dimension_counts[dimensions] > 1:
+                path = collision_name(path, profile_name)
+    except Exception:
+        return None
+    finally:
+        asset.file.close()
+
+    if not default_storage.exists(path):
+        return None
+
+    return {
+        "name": profile_name,
+        "path": path,
+        "url": default_storage.url(path),
+        "width": rendered.width,
+        "height": rendered.height,
+    }
+
+
 def remove_renditions(filename):
     """Remove generated renditions associated with an original filename."""
 

@@ -217,6 +217,50 @@ class MediaHelpersTests(TestCase):
 
 
 class RenderMediaTemplateTagTests(MediaAssetBaseTestCase):
+    def test_render_media_uses_named_rendition_and_dimensions(self):
+        with override_settings(
+            WBR_MEDIA={
+                "UPLOAD_TO": "test_uploads/%Y/%m",
+                "IMAGE_PROFILES": {
+                    "card": {
+                        "width": 20,
+                        "height": 10,
+                        "fit": "crop",
+                    }
+                },
+            }
+        ):
+            asset = MediaAsset.objects.create(
+                file=SimpleUploadedFile(
+                    "sunset.png",
+                    build_png_bytes(size=(40, 20)),
+                    content_type="image/png",
+                )
+            )
+            rendered = Template(
+                "{% load wbr_media_tags %}{% render_media asset size='card' %}"
+            ).render(Context({"asset": asset}))
+
+        self.assertIn("sunset-20x10.png", rendered)
+        self.assertIn('width="20"', rendered)
+        self.assertIn('height="10"', rendered)
+
+    def test_render_media_figure_honors_explicit_alt_text(self):
+        asset = MediaAsset.objects.create(
+            alt_text="Metadata alt",
+            file=SimpleUploadedFile(
+                "sunset.png",
+                build_png_bytes(size=(40, 20)),
+                content_type="image/png",
+            ),
+        )
+
+        rendered = Template(
+            "{% load wbr_media_tags %}{% render_media asset alt='Explicit alt' %}"
+        ).render(Context({"asset": asset}))
+
+        self.assertIn('alt="Explicit alt"', rendered)
+
     def test_render_media_returns_empty_for_missing_asset_or_file(self):
         no_asset = Template("{% load wbr_media_tags %}{% render_media asset %}").render(
             Context({"asset": None})
