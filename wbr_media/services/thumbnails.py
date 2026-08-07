@@ -8,16 +8,7 @@ from django.core.files.storage import default_storage
 from PIL import Image, ImageOps
 
 from wbr_media.config import get_image_profiles
-
-
-def _profile_name(
-    filename, profile_name, width, height, extension, include_profile=False
-):
-    path = Path(filename)
-    profile_suffix = f"-{profile_name}" if include_profile else ""
-    return str(
-        path.with_name(f"{path.stem}{profile_suffix}-{width}x{height}{extension}")
-    )
+from wbr_media.services.storage import collision_name, rendition_name
 
 
 def _output_format(source, profile):
@@ -82,7 +73,7 @@ def _centering(position):
         "left": (0.0, 0.5),
         "right": (1.0, 0.5),
     }
-    if isinstance(position, (tuple, list)) and len(position) == 2:
+    if isinstance(position, tuple | list) and len(position) == 2:
         return tuple(float(value) for value in position)
     return positions.get(position, positions["center"])
 
@@ -109,23 +100,13 @@ def generate_renditions(asset):
                 rendered = _render(source, profile)
                 image_format, extension = _output_format(source, profile)
                 dimensions = (profile["width"], profile["height"])
-                output_path = _profile_name(
-                    asset.file.name,
-                    profile_name,
-                    rendered.width,
-                    rendered.height,
-                    extension,
-                    include_profile=dimension_counts[dimensions] > 1,
+                output_path = rendition_name(
+                    asset.file.name, rendered.width, rendered.height, extension
                 )
+                if dimension_counts[dimensions] > 1:
+                    output_path = collision_name(output_path, profile_name)
                 if output_path in generated_paths:
-                    output_path = _profile_name(
-                        asset.file.name,
-                        profile_name,
-                        rendered.width,
-                        rendered.height,
-                        extension,
-                        include_profile=True,
-                    )
+                    output_path = collision_name(output_path, profile_name)
                 output = BytesIO()
                 save_options = {}
                 if profile.get("quality") is not None:
