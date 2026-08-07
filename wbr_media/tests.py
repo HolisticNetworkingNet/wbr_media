@@ -26,6 +26,7 @@ from wbr_media.models import (
     classify_media_type,
     media_upload_path,
 )
+from wbr_media.services import generate_renditions
 from wbr_media.services.storage import collision_name, rendition_name
 from wbr_media.transfer import MediaImportError, WBRMediaHandler
 from wbr_media.transfer.files import MediaExportResult, MediaFileExporter
@@ -99,6 +100,64 @@ class MediaAssetBaseTestCase(TestCase):
         )
         self.settings_override.enable()
         self.addCleanup(self.settings_override.disable)
+
+
+class ThumbnailGenerationTests(MediaAssetBaseTestCase):
+    def test_crop_scale_and_contain_profiles_generate_expected_dimensions(self):
+        with override_settings(
+            WBR_MEDIA={
+                "UPLOAD_TO": "test_uploads/%Y/%m",
+                "IMAGE_PROFILES": {
+                    "cropped": {"width": 20, "height": 10, "fit": "crop"},
+                    "scaled": {"width": 20, "height": 20, "fit": "scale"},
+                    "contained": {"width": 20, "height": 20, "fit": "contain"},
+                },
+            }
+        ):
+            asset = MediaAsset.objects.create(
+                file=SimpleUploadedFile(
+                    "landscape.png",
+                    build_png_bytes(size=(40, 20)),
+                    content_type="image/png",
+                )
+            )
+
+            paths = generate_renditions(asset)
+
+        self.assertEqual(len(paths), 3)
+        with default_storage.open(paths[0], "rb") as generated:
+            with Image.open(generated) as image:
+                self.assertEqual(image.size, (20, 10))
+        with default_storage.open(paths[1], "rb") as generated:
+            with Image.open(generated) as image:
+                self.assertEqual(image.size, (20, 10))
+        with default_storage.open(paths[2], "rb") as generated:
+            with Image.open(generated) as image:
+                self.assertEqual(image.size, (20, 20))
+
+    def test_generation_is_idempotent(self):
+        with override_settings(
+            WBR_MEDIA={
+                "UPLOAD_TO": "test_uploads/%Y/%m",
+                "IMAGE_PROFILES": {
+                    "card": {"width": 20, "height": 10, "fit": "crop"},
+                },
+            }
+        ):
+            asset = MediaAsset.objects.create(
+                file=SimpleUploadedFile(
+                    "repeat.png",
+                    build_png_bytes(size=(40, 20)),
+                    content_type="image/png",
+                )
+            )
+            first = generate_renditions(asset)
+            first_bytes = default_storage.open(first[0], "rb").read()
+            second = generate_renditions(asset)
+            second_bytes = default_storage.open(second[0], "rb").read()
+
+        self.assertEqual(first, second)
+        self.assertEqual(first_bytes, second_bytes)
 
 
 class MediaAssetCrudTests(MediaAssetBaseTestCase):
