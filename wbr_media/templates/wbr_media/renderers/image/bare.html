@@ -1,5 +1,7 @@
 <img
     src="{{ media_url }}"
-    alt="{{ alt|default:asset.alt_text }}"
+    alt="{{ alt }}"
     class="{{ class_name }}"
+    {% if width %}width="{{ width }}"{% endif %}
+    {% if height %}height="{{ height }}"{% endif %}
 >

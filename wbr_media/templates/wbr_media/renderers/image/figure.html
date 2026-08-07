@@ -1,7 +1,9 @@
 <figure class="wbr-media wbr-media--image {{ class_name }}">
     <img
             src="{{ media_url }}"
-            alt="{{ asset.alt_text|default:asset.title }}"
+            alt="{{ alt }}"
+            {% if width %}width="{{ width }}"{% endif %}
+            {% if height %}height="{{ height }}"{% endif %}
     >
     {% if asset.description %}
         <figcaption>{{ asset.description }}</figcaption>

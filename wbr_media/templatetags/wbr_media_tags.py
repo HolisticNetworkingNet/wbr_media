@@ -2,6 +2,8 @@ from django import template
 from django.template.loader import select_template
 from django.utils.safestring import mark_safe
 
+from wbr_media.services import resolve_rendition
+
 register = template.Library()
 
 
@@ -24,8 +26,14 @@ def render_media(asset, size="full", display=None, class_name="", alt=""):
     if display is None:
         display = "figure" if asset.media_type == "image" else "link"
 
-    # --- Resolve media URL (future: renditions) ---
-    media_url = asset.file.url
+    rendition = None
+    if asset.media_type == "image" and size != "full":
+        rendition = resolve_rendition(asset, size)
+
+    media_url = rendition["url"] if rendition else asset.file.url
+    width = rendition["width"] if rendition else None
+    height = rendition["height"] if rendition else None
+    resolved_alt = alt or asset.alt_text or asset.title
 
     # --- Template resolution order ---
     template_candidates = [
@@ -42,7 +50,10 @@ def render_media(asset, size="full", display=None, class_name="", alt=""):
         "display": display,
         "class_name": class_name,
         "media_url": media_url,
-        "alt": alt,
+        "alt": resolved_alt,
+        "width": width,
+        "height": height,
+        "rendition": rendition,
     }
 
     return mark_safe(template_obj.render(context))
