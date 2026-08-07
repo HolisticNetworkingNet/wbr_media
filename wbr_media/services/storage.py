@@ -32,4 +32,3 @@ def collision_name(path, profile_name):
             f"-{rendition.stem.rsplit('-', 1)[-1]}{rendition.suffix}"
         )
     )
-
