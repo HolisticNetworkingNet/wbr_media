@@ -135,7 +135,6 @@ class MediaAssetUploadMixin:
                             names["alt"],
                             names["description"],
                         ),
-                        "description": "Upload a file or select an existing media asset.",
                     },
                 )
             )
