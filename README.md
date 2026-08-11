@@ -123,6 +123,46 @@ Run migrations:
 python manage.py migrate
 ```
 
+## Admin upload panel
+
+WBR Media includes a reusable admin mixin for models that relate to a
+`MediaAsset`. Set `media_field` to the relationship field on your model. The
+mixin adds the complete two-column upload panel automatically:
+
+```python
+# models.py
+from django.db import models
+from wbr_media.models import MediaAsset
+
+
+class Article(models.Model):
+    title = models.CharField(max_length=200)
+    image = models.ForeignKey(
+        MediaAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+```
+
+```python
+# admin.py
+from django.contrib import admin
+
+from wbr_media.admin_mixins import MediaAssetUploadMixin
+
+from .models import Article
+
+
+@admin.register(Article)
+class ArticleAdmin(MediaAssetUploadMixin, admin.ModelAdmin):
+    media_field = "image"
+```
+
+The panel accepts the same file types as `MediaAsset`, prepopulates metadata
+when editing an existing asset, and shows an image preview when a new image is
+selected.
+
 ---
 
 # ⚙️ Configuration

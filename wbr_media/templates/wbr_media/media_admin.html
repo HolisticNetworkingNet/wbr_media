@@ -1,0 +1,56 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Media uploads</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; }
+    body { margin: 0; background: #f5f7fa; color: #17202a; }
+    header { background: #173f52; color: white; padding: 1.25rem 5vw; }
+    main { max-width: 1100px; margin: 2rem auto; padding: 0 1.25rem; }
+    .panel { background: white; border: 1px solid #dce3e8; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    h1, h2 { margin-top: 0; } h1 { font-size: 1.5rem; }
+    form p { display: grid; gap: .4rem; } label { font-weight: 650; }
+    input, textarea { box-sizing: border-box; width: 100%; padding: .65rem; border: 1px solid #b9c6ce; border-radius: 5px; font: inherit; }
+    input[type=file] { padding: .45rem; } button { background: #17627d; color: white; border: 0; border-radius: 5px; padding: .7rem 1.1rem; font-weight: 700; cursor: pointer; }
+    .notice { background: #e2f4e9; border: 1px solid #a6d5b5; padding: .75rem 1rem; border-radius: 5px; margin-bottom: 1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 1rem; }
+    .asset { border: 1px solid #dce3e8; border-radius: 7px; overflow: hidden; background: #fff; }
+    .asset-preview { height: 130px; display: grid; place-items: center; background: #eef2f5; color: #52636d; }
+    .asset-preview img { width: 100%; height: 100%; object-fit: cover; } .asset-info { padding: .7rem; }
+    .asset-info strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .muted { color: #63737d; font-size: .9rem; }
+  </style>
+</head>
+<body>
+  <header><strong>Media workspace</strong></header>
+  <main>
+    <section class="panel">
+      <h1>Upload media</h1>
+      {% if uploaded %}<div class="notice">Upload complete. Your media asset is now available below.</div>{% endif %}
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Upload media</button>
+      </form>
+    </section>
+    <section class="panel">
+      <h2>Recent media</h2>
+      {% if assets %}
+      <div class="grid">
+        {% for asset in assets %}
+        <article class="asset">
+          <div class="asset-preview">
+            {% if asset.media_type == "image" %}<img src="{{ asset.file.url }}" alt="{{ asset.alt_text }}">{% else %}{{ asset.media_type|default:"file"|title }}{% endif %}
+          </div>
+          <div class="asset-info"><strong>{{ asset.title|default:asset.file_name }}</strong><span class="muted">{{ asset.file_name }}</span></div>
+        </article>
+        {% endfor %}
+      </div>
+      {% else %}<p class="muted">No media uploaded yet.</p>{% endif %}
+    </section>
+  </main>
+</body>
+</html>
