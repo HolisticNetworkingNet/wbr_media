@@ -7,16 +7,12 @@
     fieldset.image-panel > h2 { display:none; }
     fieldset.image-panel > .description { grid-column:1/-1; margin:0 0 4px; padding:0; }
     fieldset.image-panel > .form-row { border-bottom:0; padding:4px 0; margin:0; }
-    fieldset.image-panel > .field-media_asset_preview { grid-column:1; grid-row:2/span 5; align-self:start; }
-    fieldset.image-panel > .field-media_asset_preview label,
-    fieldset.image-panel > .field-media_asset_preview .help { display:none; }
-    fieldset.image-panel > .field-media_asset_preview .flex-container > div,
-    fieldset.image-panel > .field-media_asset_preview .readonly { width:100%; margin:0; padding:0; }
-    fieldset.image-panel > .field-image_file,
-    fieldset.image-panel > .field-image,
-    fieldset.image-panel > .field-image_title,
-    fieldset.image-panel > .field-image_alt_text,
-    fieldset.image-panel > .field-image_description { grid-column:2; }
+    fieldset.image-panel > [class*="preview"] { grid-column:1; grid-row:2/span 5; align-self:start; }
+    fieldset.image-panel > [class*="preview"] label,
+    fieldset.image-panel > [class*="preview"] .help { display:none; }
+    fieldset.image-panel > [class*="preview"] .flex-container > div,
+    fieldset.image-panel > [class*="preview"] .readonly { width:100%; margin:0; padding:0; }
+    fieldset.image-panel > .form-row:not([class*="preview"]) { grid-column:2; }
     fieldset.image-panel img { display:block; width:auto; height:auto; max-width:100%; max-height:260px; object-fit:contain; border:1px solid #d8dde0; background:#f8f8f8; }
     fieldset.image-panel .image-placeholder,
     fieldset.image-panel .file-placeholder { display:grid; place-items:center; min-height:180px; color:#6b7280; background:#f3f4f6; border:1px dashed #b8c0c7; }
@@ -30,20 +26,24 @@
   {{ block.super }}
   <script>
     (function () {
-      const input = document.getElementById("id_image_file");
-      const preview = document.getElementById("media-asset-preview");
-      if (!input || !preview) return;
-      input.addEventListener("change", function () {
-        const file = input.files && input.files[0];
-        if (!file || !file.type.startsWith("image/")) return;
-        const reader = new FileReader();
-        reader.addEventListener("load", function () {
-          if (preview.tagName.toLowerCase() === "img") { preview.src = reader.result; return; }
-          const image = document.createElement("img");
-          image.id = "media-asset-preview"; image.alt = "Selected image preview"; image.src = reader.result;
-          preview.replaceWith(image);
+      document.querySelectorAll('input[type="file"]').forEach(function (input) {
+        const previewId = input.name === "image_file"
+          ? "media-asset-preview"
+          : input.name.replace(/__file$/, "__preview");
+        const preview = document.getElementById(previewId);
+        if (!preview) return;
+        input.addEventListener("change", function () {
+          const file = input.files && input.files[0];
+          if (!file || !file.type.startsWith("image/")) return;
+          const reader = new FileReader();
+          reader.addEventListener("load", function () {
+            if (preview.tagName.toLowerCase() === "img") { preview.src = reader.result; return; }
+            const image = document.createElement("img");
+            image.id = previewId; image.alt = "Selected image preview"; image.src = reader.result;
+            preview.replaceWith(image);
+          });
+          reader.readAsDataURL(file);
         });
-        reader.readAsDataURL(file);
       });
     }());
   </script>
