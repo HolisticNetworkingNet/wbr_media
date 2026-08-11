@@ -89,30 +89,36 @@ class MediaAssetUploadMixin:
         )
 
     def get_fieldsets(self, request, obj=None):
-        content_fields = []
+        base_fieldsets = []
         if self.fieldsets is not None:
             for _name, options in self.fieldsets:
-                content_fields.extend(options.get("fields", ()))
+                base_fieldsets.append((_name, dict(options)))
         else:
-            content_fields.extend(
+            default_fields = tuple(
                 field.name
                 for field in self.model._meta.get_fields()
                 if getattr(field, "editable", False)
                 and not getattr(field, "auto_created", False)
                 and field.name not in (self.exclude or ())
             )
+            base_fieldsets.append((None, {"fields": default_fields}))
         media_fields = {field_name for field_name, _label in self._media_field_config()}
         preview_fields = {
             self._media_names(field_name)["preview"]
             for field_name, _label in self._media_field_config()
         }
-        content_fields = [
-            field
-            for field in content_fields
-            if field not in media_fields
-            and field not in preview_fields
-            and field not in self.readonly_fields
-        ]
+        cleaned_fieldsets = []
+        for name, options in base_fieldsets:
+            fields = tuple(
+                field
+                for field in options.get("fields", ())
+                if field not in media_fields
+                and field not in preview_fields
+                and field not in self.readonly_fields
+            )
+            if fields:
+                options["fields"] = fields
+                cleaned_fieldsets.append((name, options))
         panels = []
         for field_name, label in self._media_field_config():
             names = self._media_names(field_name)
@@ -120,7 +126,7 @@ class MediaAssetUploadMixin:
                 (
                     label,
                     {
-                        "classes": ("image-panel",),
+                        "classes": ("wbr-media-upload-panel",),
                         "fields": (
                             names["file"],
                             names["preview"],
@@ -133,7 +139,7 @@ class MediaAssetUploadMixin:
                     },
                 )
             )
-        return ((None, {"fields": tuple(dict.fromkeys(content_fields))}), *panels)
+        return (*cleaned_fieldsets, *panels)
 
     def get_form(self, request, obj=None, **kwargs):
         config = self._media_field_config()
