@@ -10,7 +10,11 @@ class Page(models.Model):
     body = models.TextField(blank=True)
     published = models.BooleanField(default=False)
     image = models.ForeignKey(
-        MediaAsset, on_delete=models.SET_NULL, null=True, blank=True, related_name="pages"
+        MediaAsset,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="pages",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

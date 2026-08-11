@@ -66,7 +66,9 @@ class PageAdmin(admin.ModelAdmin):
             return mark_safe('<div class="image-placeholder">No image</div>')
         if obj.image.media_type == "image":
             return format_html(
-                '<img src="{}" alt="{}">', obj.image.file.url, obj.image.alt_text or obj.title
+                '<img src="{}" alt="{}">',
+                obj.image.file.url,
+                obj.image.alt_text or obj.title,
             )
         return format_html('<a href="{}">Open uploaded file</a>', obj.image.file.url)
 

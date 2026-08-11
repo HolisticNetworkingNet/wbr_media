@@ -22,4 +22,3 @@ def media_admin(request):
             "uploaded": request.GET.get("uploaded"),
         },
     )
-
