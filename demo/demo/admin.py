@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from wbr_media.admin_mixins import MediaAssetUploadMixin
 
 from .models import Page

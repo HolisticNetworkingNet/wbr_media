@@ -13,7 +13,12 @@ class MediaAssetUploadMixin:
 
     media_field = "image"
     change_form_template = "admin/wbr_media/mediaasset_upload/change_form.html"
-    media_upload_fields = ("image_file", "image_title", "image_alt_text", "image_description")
+    media_upload_fields = (
+        "image_file",
+        "image_title",
+        "image_alt_text",
+        "image_description",
+    )
 
     def get_fieldsets(self, request, obj=None):
         content_fields = []
@@ -29,7 +34,8 @@ class MediaAssetUploadMixin:
                 and field.name not in (self.exclude or ())
             )
         content_fields = [
-            field for field in content_fields
+            field
+            for field in content_fields
             if field not in (self.media_field, "media_asset_preview")
             and field not in self.readonly_fields
         ]
@@ -71,7 +77,9 @@ class MediaAssetUploadMixin:
             image_title = forms.CharField(required=False, label="File title")
             image_alt_text = forms.CharField(required=False, label="Alt text")
             image_description = forms.CharField(
-                required=False, label="Description", widget=forms.Textarea(attrs={"rows": 4})
+                required=False,
+                label="Description",
+                widget=forms.Textarea(attrs={"rows": 4}),
             )
 
             def __init__(self, *args, **form_kwargs):
@@ -100,11 +108,15 @@ class MediaAssetUploadMixin:
     def media_asset_preview(self, obj):
         asset = getattr(obj, self.media_field, None) if obj else None
         if not asset or not asset.file:
-            return mark_safe('<div id="media-asset-preview" class="image-placeholder">No file</div>')
+            return mark_safe(
+                '<div id="media-asset-preview" class="image-placeholder">No file</div>'
+            )
         if asset.media_type == "image":
             return format_html(
                 '<img id="media-asset-preview" src="{}" alt="{}">',
                 asset.file.url,
                 asset.alt_text or asset.title,
             )
-        return mark_safe('<div id="media-asset-preview" class="file-placeholder">File selected</div>')
+        return mark_safe(
+            '<div id="media-asset-preview" class="file-placeholder">File selected</div>'
+        )
