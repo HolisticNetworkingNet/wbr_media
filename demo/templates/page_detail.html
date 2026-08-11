@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>{{ page.title }}</title></head>
+<body><main>
+  <h1>{{ page.title }}</h1>
+  {% if page.image and page.image.media_type == "image" %}<img src="{{ page.image.file.url }}" alt="{{ page.image.alt_text|default:page.title }}" style="max-width:100%;height:auto">{% endif %}
+  {{ page.body|linebreaks }}
+</main></body>
+</html>
