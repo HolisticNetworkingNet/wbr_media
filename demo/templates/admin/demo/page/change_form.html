@@ -29,3 +29,31 @@
     }
   </style>
 {% endblock %}
+
+{% block admin_change_form_document_ready %}
+  {{ block.super }}
+  <script>
+    (function () {
+      const input = document.getElementById("id_image_file");
+      const preview = document.getElementById("page-image-preview");
+      if (!input || !preview) return;
+      input.addEventListener("change", function () {
+        const file = input.files && input.files[0];
+        if (!file || !file.type.startsWith("image/")) return;
+        const reader = new FileReader();
+        reader.addEventListener("load", function () {
+          if (preview.tagName.toLowerCase() === "img") {
+            preview.src = reader.result;
+            return;
+          }
+          const image = document.createElement("img");
+          image.id = "page-image-preview";
+          image.alt = "Selected image preview";
+          image.src = reader.result;
+          preview.replaceWith(image);
+        });
+        reader.readAsDataURL(file);
+      });
+    }());
+  </script>
+{% endblock %}
