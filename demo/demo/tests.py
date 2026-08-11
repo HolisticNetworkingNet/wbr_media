@@ -23,6 +23,13 @@ class InvalidPageAdmin(MediaAssetUploadMixin, admin.ModelAdmin):
     media_fields = {}
 
 
+class GroupedPageAdmin(PageAdmin):
+    fieldsets = (
+        ("Content", {"fields": ("title", "slug")}),
+        ("Publishing", {"fields": ("body", "published", "image")}),
+    )
+
+
 class PageAdminUploadTests(TestCase):
     def setUp(self):
         self.admin = PageAdmin(Page, AdminSite())
@@ -39,6 +46,13 @@ class PageAdminUploadTests(TestCase):
         single_fields = self.single_admin.get_fieldsets(self.request)[1][1]["fields"]
         self.assertIn("image_file", single_fields)
         self.assertNotIn("media__image__file", single_fields)
+        grouped = GroupedPageAdmin(Page, AdminSite()).get_fieldsets(self.request)
+        self.assertEqual(
+            [fieldset[0] for fieldset in grouped],
+            ["Content", "Publishing", "Hero image", "Thumbnail image"],
+        )
+        self.assertEqual(grouped[0][1]["fields"], ("title", "slug"))
+        self.assertEqual(grouped[1][1]["fields"], ("body", "published"))
 
     def test_mixin_prefills_existing_asset_metadata(self):
         asset = MediaAsset.objects.create(

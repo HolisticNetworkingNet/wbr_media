@@ -3,22 +3,22 @@
 {% block extrastyle %}
   {{ block.super }}
   <style>
-    fieldset.image-panel { display:grid; grid-template-columns:minmax(180px,1fr) minmax(360px,2fr); gap:0 1.25rem; padding:8px 12px 10px; overflow:hidden; }
-    fieldset.image-panel > h2 { display:none; }
-    fieldset.image-panel > .description { grid-column:1/-1; margin:0 0 4px; padding:0; }
-    fieldset.image-panel > .form-row { border-bottom:0; padding:4px 0; margin:0; }
-    fieldset.image-panel > [class*="preview"] { grid-column:1; grid-row:2/span 5; align-self:start; }
-    fieldset.image-panel > [class*="preview"] label,
-    fieldset.image-panel > [class*="preview"] .help { display:none; }
-    fieldset.image-panel > [class*="preview"] .flex-container > div,
-    fieldset.image-panel > [class*="preview"] .readonly { width:100%; margin:0; padding:0; }
-    fieldset.image-panel > .form-row:not([class*="preview"]) { grid-column:2; }
-    fieldset.image-panel img { display:block; width:auto; height:auto; max-width:100%; max-height:260px; object-fit:contain; border:1px solid #d8dde0; background:#f8f8f8; }
-    fieldset.image-panel .image-placeholder,
-    fieldset.image-panel .file-placeholder { display:grid; place-items:center; min-height:180px; color:#6b7280; background:#f3f4f6; border:1px dashed #b8c0c7; }
-    fieldset.image-panel input[type=text], fieldset.image-panel textarea, fieldset.image-panel select { padding:5px 6px; }
-    fieldset.image-panel textarea { min-height:66px; }
-    @media (max-width:800px) { fieldset.image-panel { display:block; } }
+    fieldset.wbr-media-upload-panel { display:grid; grid-template-columns:minmax(180px,1fr) minmax(360px,2fr); gap:0 1.25rem; padding:8px 12px 10px; overflow:hidden; }
+    fieldset.wbr-media-upload-panel > h2 { display:block !important; visibility:visible; grid-column:1/-1; margin:-8px -12px 8px; padding:8px 12px; }
+    fieldset.wbr-media-upload-panel > .description { grid-column:1/-1; margin:0 0 4px; padding:0; }
+    fieldset.wbr-media-upload-panel > .form-row { border-bottom:0; padding:4px 0; margin:0; }
+    fieldset.wbr-media-upload-panel > [class*="preview"] { grid-column:1; grid-row:2/span 5; align-self:start; }
+    fieldset.wbr-media-upload-panel > [class*="preview"] label,
+    fieldset.wbr-media-upload-panel > [class*="preview"] .help { display:none; }
+    fieldset.wbr-media-upload-panel > [class*="preview"] .flex-container > div,
+    fieldset.wbr-media-upload-panel > [class*="preview"] .readonly { width:100%; margin:0; padding:0; }
+    fieldset.wbr-media-upload-panel > .form-row:not([class*="preview"]) { grid-column:2; }
+    fieldset.wbr-media-upload-panel img { display:block; width:auto; height:auto; max-width:100%; max-height:260px; object-fit:contain; border:1px solid #d8dde0; background:#f8f8f8; }
+    fieldset.wbr-media-upload-panel .image-placeholder,
+    fieldset.wbr-media-upload-panel .file-placeholder { display:grid; place-items:center; min-height:180px; color:#6b7280; background:#f3f4f6; border:1px dashed #b8c0c7; }
+    fieldset.wbr-media-upload-panel input[type=text], fieldset.wbr-media-upload-panel textarea, fieldset.wbr-media-upload-panel select { padding:5px 6px; }
+    fieldset.wbr-media-upload-panel textarea { min-height:66px; }
+    @media (max-width:800px) { fieldset.wbr-media-upload-panel { display:block; } }
   </style>
 {% endblock %}
 
