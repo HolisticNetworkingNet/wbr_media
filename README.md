@@ -163,6 +163,23 @@ The panel accepts the same file types as `MediaAsset`, prepopulates metadata
 when editing an existing asset, and shows an image preview when a new image is
 selected.
 
+For models with multiple media relationships, use `media_fields` instead. The
+mixin creates a separate namespaced panel for each relationship:
+
+```python
+class PortfolioAdmin(MediaAssetUploadMixin, admin.ModelAdmin):
+    media_fields = {
+        "hero_media": "Hero image",
+        "thumbnail_media": "Thumbnail image",
+    }
+```
+
+Each panel has independent upload, selector, preview, and metadata fields.
+Blank uploads preserve the existing relationship and metadata. Existing
+single-field admins using `media_field` require no migration; they can adopt
+`media_fields` incrementally by moving the relationship into the mapping.
+If both settings are present, `media_fields` takes precedence.
+
 ---
 
 # ⚙️ Configuration
